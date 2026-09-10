@@ -1,18 +1,8 @@
 // src/config.js
 import {
-  Building2,
-  TreePine,
-  Mountain,
-  Shrub,
-  Fish,
-  Wheat,
-  Layers,
-  CloudFog,
-  Droplet,
-  Waves,
-  MountainSnow,
-  Landmark,
-  PawPrint,
+  Building2, TreePine, Mountain, Shrub, Fish, Wheat, Layers, CloudFog,
+  Droplet, Waves, MountainSnow, Landmark, PawPrint,
+  Tent, Dog, Users,
 } from "lucide-react";
 
 export const TYPOLOGIES = [
@@ -32,6 +22,12 @@ export const ELEMENTS = [
   { id: "grotte_falaise", label: "Grotte / Falaise", icon: MountainSnow },
   { id: "ruines", label: "Ruines / Patrimoine", icon: Landmark },
   { id: "troupeau", label: "Troupeau / Pâturage", icon: PawPrint },
+];
+
+export const OPTIONS = [
+  { id: "bivouac", label: "Bivouac", icon: Tent },
+  { id: "chien", label: "Avec mon chien", icon: Dog },
+  { id: "famille", label: "En famille", icon: Users },
 ];
 
 export const BADGES = [

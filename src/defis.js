@@ -21,20 +21,31 @@ export function getBadge(points) {
   return [...BADGES].reverse().find((b) => points >= b.seuil) ?? BADGES[0];
 }
 
-// Algorithme de sélection aléatoire des défis
-export function pickDefis(typologie, elements) {
+export function pickDefis(typologie, elements, options) {
+  const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
+
   const compatibles = DEFIS.filter((d) => {
     const matchProfil = d.profils.includes(typologie);
-    const matchElement =
-      !d.elements || d.elements.some((e) => elements.includes(e));
-    return matchProfil && matchElement;
+    const matchElement = !d.elements || d.elements.some((e) => elements.includes(e));
+    const matchOption = !d.options || d.options.some((o) => options.includes(o));
+    return matchProfil && matchElement && matchOption;
   });
-  const pool =
-    compatibles.length >= 3
-      ? compatibles
-      : DEFIS.filter((d) => d.profils.includes(typologie));
-  const shuffled = [...pool].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, 3);
+
+  const faciles = compatibles.filter((d) => d.difficulte <= 3);
+  const difficiles = compatibles.filter((d) => d.difficulte >= 4);
+
+  const poolDifficiles = difficiles.length > 0 ? difficiles : DEFIS.filter((d) => d.difficulte >= 4);
+  const poolFaciles = faciles.length >= 2 ? faciles : DEFIS.filter((d) => d.difficulte <= 3);
+
+  const choixDifficile = shuffle(poolDifficiles).slice(0, 1);
+  const choixFaciles = shuffle(poolFaciles).slice(0, 2);
+
+  const tirage = [...choixDifficile, ...choixFaciles];
+  return tirage.sort((a, b) => b.difficulte - a.difficulte);
+}
+
+export function getDefisParIds(ids) {
+  return ids.map((id) => DEFIS.find((d) => d.id === id)).filter(Boolean);
 }
 
 export const DEFIS = [
@@ -46,9 +57,7 @@ export const DEFIS = [
     profils: ["urbaine", "foret", "montagne", "garrigue", "littoral", "campagne", "causse", "zone_humide"],
     explication:
       "Les déchets abandonnés en pleine nature mettent parfois des siècles à se dégrader et menacent la faune locale.",
-    remplacement: {
-      titre: "Ramasser des déchets dans ta rue pendant 5 minutes",
-    },
+    
   },
   {
     id: "d2",
@@ -59,9 +68,7 @@ export const DEFIS = [
     elements: ["riviere"],
     explication:
       "Les petits barrages artisanaux bloquent la circulation des poissons et perturbent le débit naturel des cours d'eau.",
-    remplacement: {
-      titre: "Installer un composteur ou commencer à composter tes déchets",
-    },
+   
   },
   {
     id: "d3",
@@ -71,9 +78,7 @@ export const DEFIS = [
     profils: ["foret", "montagne", "campagne"],
     explication:
       "Prends une photo d'un arbre et essaie de l'identifier. Reconnaître les essences locales aide à comprendre l'écosystème que tu traverses.",
-    remplacement: {
-      titre: "Identifier 3 plantes de ton quartier ou de ton jardin",
-    },
+   
   },
   {
     id: "d4",
@@ -83,10 +88,7 @@ export const DEFIS = [
     profils: ["garrigue", "causse"],
     explication:
       "Le romarin est une plante emblématique des milieux secs méditerranéens, adaptée à la sécheresse. Apprendre à la reconnaître, c'est déjà comprendre ce milieu.",
-    remplacement: {
-      titre: "Tester une recette avec des herbes aromatiques que tu cultives ou achètes en circuit court",
-
-    },
+  
   },
   {
     id: "d5",
@@ -96,9 +98,7 @@ export const DEFIS = [
     profils: ["littoral"],
     explication:
       "Les oiseaux marins sont de bons indicateurs de la santé du littoral. Les observer, c'est apprendre à lire un écosystème.",
-    remplacement: {
-      titre: "Regarder un documentaire sur la faune marine et noter 3 choses apprises",
-    },
+   
   },
   {
     id: "d6",
@@ -108,10 +108,7 @@ export const DEFIS = [
     profils: ["urbaine"],
     explication:
       "En ville, la pollution lumineuse et sonore perturbe la faune nocturne. Apprendre à la repérer, c'est un premier pas pour la limiter.",
-    remplacement: {
-      titre: "Éteindre toutes les lumières inutiles chez toi ce soir et noter la différence",
-    },
-  },
+  },  
   {
     id: "d7",
     titre: "Mesurer la clarté d'un point d'eau",
@@ -121,10 +118,7 @@ export const DEFIS = [
     elements: ["riviere", "lac"],
     explication:
       "La clarté de l'eau donne une première idée de sa qualité. Observe, prends une photo, compare avec un point d'eau que tu connais.",
-    remplacement: {
-      titre: "Réduire ta consommation d'eau aujourd'hui et noter comment",
-
-    },
+   
   },
   {
     id: "d8",
@@ -134,10 +128,6 @@ export const DEFIS = [
     profils: ["campagne"],
     explication:
       "Les haies et bandes fleuries abritent des pollinisateurs et des auxiliaires des cultures, essentiels à la biodiversité agricole.",
-    remplacement: {
-      titre: "Installer une jardinière ou un pot mellifère pour les pollinisateurs chez toi",
-
-    },
   },
   {
     id: "d9",
@@ -147,10 +137,7 @@ export const DEFIS = [
     profils: ["campagne", "causse", "montagne"],
     elements: ["troupeau"],
     explication:
-      "Le pastoralisme entretient des paysages ouverts typiques des causses et des montagnes, favorables à une flore spécifique.",
-    remplacement: {
-      titre: "Te renseigner sur un produit local issu du pastoralisme (fromage, laine) près de chez toi",
-    },
+      "Le pastoralisme entretient des paysages ouverts typiques des causses et des montagnes, favorables à une flore spécifique.", 
   },
   {
     id: "d10",
@@ -161,9 +148,6 @@ export const DEFIS = [
     elements: ["grotte_falaise"],
     explication:
       "Les milieux rocheux et karstiques abritent des espèces spécialisées (chauves-souris, lichens) adaptées à ces conditions particulières.",
-    remplacement: {
-      titre: "Te renseigner sur une espèce adaptée aux milieux rocheux et noter 3 informations",
-    },
   },
   {
     id: "d11",
@@ -172,10 +156,7 @@ export const DEFIS = [
     difficulte: 2,
     profils: ["zone_humide"],
     explication:
-      "Batraciens, oiseaux d'eau, libellules... les zones humides comptent parmi les écosystèmes les plus riches en biodiversité, tout en filtrant naturellement l'eau.",
-    remplacement: {
-      titre: "Regarder un reportage sur les zones humides et noter 3 espèces qu'on y trouve",
-    },
+      "Batraciens, oiseaux d'eau, libellules... les zones humides comptent parmi les écosystèmes les plus riches en biodiversité, tout en filtrant naturellement l'eau.",  
   },
   {
     id: "d12",
@@ -185,9 +166,7 @@ export const DEFIS = [
     profils: ["zone_humide"],
     explication:
       "Les zones humides sont parmi les écosystèmes les plus menacés en France, malgré leur rôle essentiel pour l'eau et la biodiversité.",
-    remplacement: {
-      titre: "Te renseigner sur une association locale de protection des zones humides",
-    },
+   
   },
   {
     id: "d13",
@@ -198,9 +177,7 @@ export const DEFIS = [
     elements: ["ruines"],
     explication:
       "Le patrimoine bâti abandonné raconte souvent comment les activités humaines ont façonné le paysage au fil du temps.",
-    remplacement: {
-      titre: "Te renseigner sur un monument ou lieu historique près de chez toi",
-    },
+   
   },
   {
     id: "d14",
@@ -210,8 +187,64 @@ export const DEFIS = [
     profils: ["causse"],
     explication:
       "Les sols fins et calcaires des causses imposent aux plantes de fortes adaptations à la sécheresse et au vent.",
-    remplacement: {
-      titre: "Identifier une plante résistante à la sécheresse dans ton jardin ou un espace vert",
-    },
+  },
+
+  {
+    id: "d15",
+    titre: "Ramasser un sac complet de déchets",
+    categorie: "ecolo",
+    difficulte: 4,
+    profils: ["urbaine", "foret", "montagne", "garrigue", "littoral", "campagne", "causse", "zone_humide"],
+    explication:
+      "Un vrai geste d'impact : prévois un sac et des gants, et nettoie une zone complète plutôt que quelques déchets isolés.",
+  },
+  {
+    id: "d16",
+    titre: "Réaliser un inventaire de 5 espèces différentes",
+    categorie: "apprentissage",
+    difficulte: 4,
+    profils: ["foret", "montagne", "garrigue", "causse", "campagne", "zone_humide"],
+    explication:
+      "Observe et identifie au moins 5 espèces (plantes, insectes, oiseaux...) sur ton parcours — un vrai exercice de naturaliste.",
+  },
+  {
+    id: "d17",
+    titre: "Nettoyer 50 mètres de plage et trier les déchets par type",
+    categorie: "ecolo",
+    difficulte: 5,
+    profils: ["littoral"],
+    explication:
+      "Le tri par type (plastique, verre, mégots...) donne une vraie idée des sources de pollution locales.",
+  },
+
+    {
+    id: "d18",
+    titre: "Choisir un emplacement de bivouac à faible impact",
+    categorie: "ecolo",
+    difficulte: 2,
+    profils: ["foret", "montagne", "garrigue", "causse", "campagne", "littoral", "zone_humide"],
+    options: ["bivouac"],
+    explication:
+      "Un bon emplacement de bivouac ne nécessite ni de creuser, ni de couper de végétation, ni de faire de feu à même le sol : on ne laisse aucune trace.",
+  },
+  {
+    id: "d19",
+    titre: "Ramasser et emporter les déjections de ton chien",
+    categorie: "ecolo",
+    difficulte: 1,
+    profils: ["urbaine", "foret", "montagne", "garrigue", "littoral", "campagne", "causse", "zone_humide"],
+    options: ["chien"],
+    explication:
+      "Les déjections canines polluent les sols et peuvent transmettre des maladies à la faune sauvage si elles ne sont pas ramassées.",
+  },
+  {
+    id: "d20",
+    titre: "Jouer à un jeu d'observation nature en famille",
+    categorie: "apprentissage",
+    difficulte: 1,
+    profils: ["urbaine", "foret", "montagne", "garrigue", "littoral", "campagne", "causse", "zone_humide"],
+    options: ["famille"],
+    explication:
+      "Chercher ensemble 5 formes différentes dans la nature (feuilles, cailloux, nuages...) est une façon ludique d'éveiller les enfants à leur environnement.",
   },
 ];
