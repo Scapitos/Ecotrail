@@ -37,10 +37,31 @@ export function pickDefis(typologie, elements, options) {
   const poolDifficiles = difficiles.length > 0 ? difficiles : DEFIS.filter((d) => d.difficulte >= 4);
   const poolFaciles = faciles.length >= 2 ? faciles : DEFIS.filter((d) => d.difficulte <= 3);
 
-  const choixDifficile = shuffle(poolDifficiles).slice(0, 1);
-  const choixFaciles = shuffle(poolFaciles).slice(0, 2);
+  // 1. On tire le défi corsé
+  const difficileChoisi = shuffle(poolDifficiles)[0];
 
-  const tirage = [...choixDifficile, ...choixFaciles];
+  const groupesUtilises = new Set();
+  if (difficileChoisi?.groupe) groupesUtilises.add(difficileChoisi.groupe);
+
+  // 2. On tire les 2 défis faciles/moyens en évitant les groupes déjà utilisés
+  const facilesChoisis = [];
+  for (const d of shuffle(poolFaciles)) {
+    if (facilesChoisis.length === 2) break;
+    if (d.groupe && groupesUtilises.has(d.groupe)) continue;
+    facilesChoisis.push(d);
+    if (d.groupe) groupesUtilises.add(d.groupe);
+  }
+
+  // Filet de sécurité : si les règles de groupe empêchent d'atteindre 2 défis
+  // (cas rare, peu de défis compatibles), on complète quand même sans la contrainte
+  if (facilesChoisis.length < 2) {
+    for (const d of shuffle(poolFaciles)) {
+      if (facilesChoisis.length === 2) break;
+      if (!facilesChoisis.includes(d)) facilesChoisis.push(d);
+    }
+  }
+
+  const tirage = difficileChoisi ? [difficileChoisi, ...facilesChoisis] : facilesChoisis;
   return tirage.sort((a, b) => b.difficulte - a.difficulte);
 }
 
@@ -54,6 +75,7 @@ export const DEFIS = [
     titre: "Ramasser 3 déchets",
     categorie: "ecolo",
     difficulte: 1,
+    groupe: "dechets",
     profils: ["urbaine", "foret", "montagne", "garrigue", "littoral", "campagne", "causse", "zone_humide"],
     explication:
       "Les déchets abandonnés en pleine nature mettent parfois des siècles à se dégrader et menacent la faune locale.",
@@ -194,6 +216,7 @@ export const DEFIS = [
     titre: "Ramasser un sac complet de déchets",
     categorie: "ecolo",
     difficulte: 4,
+    groupe: "dechets",
     profils: ["urbaine", "foret", "montagne", "garrigue", "littoral", "campagne", "causse", "zone_humide"],
     explication:
       "Un vrai geste d'impact : prévois un sac et des gants, et nettoie une zone complète plutôt que quelques déchets isolés.",
@@ -212,6 +235,7 @@ export const DEFIS = [
     titre: "Nettoyer 50 mètres de plage et trier les déchets par type",
     categorie: "ecolo",
     difficulte: 5,
+    groupe: "dechets",
     profils: ["littoral"],
     explication:
       "Le tri par type (plastique, verre, mégots...) donne une vraie idée des sources de pollution locales.",

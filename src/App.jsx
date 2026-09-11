@@ -269,10 +269,10 @@ function Header({ pointsTotal, badge }) {
           <Leaf size={20} />
         </div>
         <div>
-          <h1 style={{ fontSize: 18, fontWeight: 800, color: "#3D5A40", margin: 0, lineHeight: 1.1 }}>
+          <h1 style={{ fontSize: 18, fontWeight: 800, color: "#3D5A40", margin: 0, lineHeight: 1.1, textAlign: "left" }}>
             EcoTrail
           </h1>
-          <span style={{ fontSize: 11, color: "#8A8064" }}>Balade & Biodiversité</span>
+          <span style={{ fontSize: 11, color: "#8A8064", textAlign: "left" }}>Balade & Biodiversité</span>
         </div>
       </div>
 
@@ -370,7 +370,7 @@ function EtapeProfil({ typologie, setTypologie, elements, toggleElement, options
       </div>
 
       <div>
-        <h2 style={titreSection}>3. Options</h2>
+        <h2 style={titreSection}>3. D'autres choses ?</h2>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 12 }}>
           {OPTIONS.map((opt) => {
             const active = options.includes(opt.id);
