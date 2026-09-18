@@ -8,7 +8,9 @@ import { DEFIS } from "./data";
 export function getBadge(points) {
   return [...BADGES].reverse().find((b) => points >= b.seuil) ?? BADGES[0];
 }
-
+export function getDefisParIds(ids) {
+  return ids.map((id) => DEFIS.find((d) => d.id === id)).filter(Boolean);
+}
 export function pickDefis(typologie, elements, options) {
   const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
 
@@ -53,7 +55,4 @@ export function pickDefis(typologie, elements, options) {
   return tirage.sort((a, b) => b.difficulte - a.difficulte);
 }
 
-export function getDefisParIds(ids) {
-  return ids.map((id) => DEFIS.find((d) => d.id === id)).filter(Boolean);
-}
 
