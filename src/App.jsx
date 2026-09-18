@@ -19,6 +19,7 @@ export default function EcoTrail() {
   const [defisRealises, setDefisRealises] = useState([]); // tableau d'ids de défis cochés
   const [pointsTotal, setPointsTotal] = useState(0);
   const [historique, setHistorique] = useState([]);
+  const [baladeSauvegardee, setBaladeSauvegardee] = useState(null); // balade détectée au chargement, en attente de choix
 
   // Écoute de l'authentification
   useEffect(() => {
@@ -49,13 +50,7 @@ export default function EcoTrail() {
       setPointsTotal(data.points_total || 0);
 
       if (data.balade_en_cours) {
-        const b = data.balade_en_cours;
-        setTypologie(b.typologie || null);
-        setElements(b.elements || []);
-        setOptions(b.options || []);
-        setDefisProposes(getDefisParIds(b.defisProposesIds || []));
-        setDefisRealises(b.defisRealises || []);
-        setEtape("defis");
+        setBaladeSauvegardee(data.balade_en_cours);
       }
     } else if (error && error.code === "PGRST116") {
       await supabase.from("profils").insert([{ id: userId, points_total: 0 }]);
@@ -146,6 +141,22 @@ export default function EcoTrail() {
     setEtape("recap");
   }
 
+  function reprendreBalade() {
+    const b = baladeSauvegardee;
+    setTypologie(b.typologie || null);
+    setElements(b.elements || []);
+    setOptions(b.options || []);
+    setDefisProposes(getDefisParIds(b.defisProposesIds || []));
+    setDefisRealises(b.defisRealises || []);
+    setEtape("defis");
+    setBaladeSauvegardee(null);
+  }
+
+  function annulerBaladeSauvegardee() {
+    synchroniserBaladeEnCours(null);
+    setBaladeSauvegardee(null);
+  }
+
   function nouvelleBalade() {
     setTypologie(null);
     setElements([]);
@@ -192,6 +203,10 @@ export default function EcoTrail() {
         justifyContent: "center",
       }}
     >
+      {baladeSauvegardee && (
+        <ModalBaladeEnCours onReprendre={reprendreBalade} onAnnuler={annulerBaladeSauvegardee} />
+      )}
+
       <div style={{ width: "100%", maxWidth: 420, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
         <Header pointsTotal={pointsTotal} badge={badgeActuel} />
 
@@ -269,10 +284,10 @@ function Header({ pointsTotal, badge }) {
           <Leaf size={20} />
         </div>
         <div>
-          <h1 style={{ fontSize: 18, fontWeight: 800, color: "#3D5A40", margin: 0, lineHeight: 1.1, textAlign: "left" }}>
+          <h1 style={{ fontSize: 18, fontWeight: 800, color: "#3D5A40", margin: 0, lineHeight: 1.1 }}>
             EcoTrail
           </h1>
-          <span style={{ fontSize: 11, color: "#8A8064", textAlign: "left" }}>Balade & Biodiversité</span>
+          <span style={{ fontSize: 11, color: "#8A8064" }}>Balade & Biodiversité</span>
         </div>
       </div>
 
@@ -298,6 +313,63 @@ function Header({ pointsTotal, badge }) {
         </button>
       </div>
     </header>
+  );
+}
+
+function ModalBaladeEnCours({ onReprendre, onAnnuler }) {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(46, 42, 34, 0.5)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 20,
+        zIndex: 1000,
+      }}
+    >
+      <div
+        style={{
+          background: "#FFFFFF",
+          borderRadius: 16,
+          padding: 24,
+          maxWidth: 340,
+          width: "100%",
+          textAlign: "center",
+        }}
+      >
+        <div style={{ fontSize: 32, marginBottom: 10 }}>🥾</div>
+        <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2E2A22", margin: "0 0 8px" }}>
+          Balade en cours
+        </h2>
+        <p style={{ fontSize: 13.5, color: "#8A8064", lineHeight: 1.5, marginBottom: 20 }}>
+          Tu as une balade non terminée avec des défis en attente. Tu veux la reprendre ou l'annuler ?
+        </p>
+
+        <button onClick={onReprendre} style={boutonPrincipal}>
+          Reprendre ma balade
+        </button>
+        <button
+          onClick={onAnnuler}
+          style={{
+            width: "100%",
+            marginTop: 10,
+            padding: "12px 20px",
+            borderRadius: 12,
+            border: "1px solid #D9534F",
+            background: "transparent",
+            color: "#D9534F",
+            fontSize: 14,
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
+        >
+          Annuler la balade
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -370,7 +442,7 @@ function EtapeProfil({ typologie, setTypologie, elements, toggleElement, options
       </div>
 
       <div>
-        <h2 style={titreSection}>3. D'autres choses ?</h2>
+        <h2 style={titreSection}>3. Options</h2>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 12 }}>
           {OPTIONS.map((opt) => {
             const active = options.includes(opt.id);
@@ -477,7 +549,7 @@ function EtapeDefis({ defis, defisRealises, onToggle, onValider, onRetour }) {
                 }}
               >
                 {realise && <Check size={16} />}
-                {realise ? "Réalisé" : "C'est fait !"}
+                {realise ? "Réalisé" : "Marquer comme réalisé"}
               </button>
             </div>
           );
