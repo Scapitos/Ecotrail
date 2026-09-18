@@ -1,8 +1,10 @@
 // src/App.jsx
 import { useState, useMemo, useEffect } from "react";
 import { Leaf, Check, Award, RotateCcw, LogOut } from "lucide-react";
-import { TYPOLOGIES, ELEMENTS, OPTIONS, BADGES } from "./config";
-import { getBadge, pickDefis, getPointsDefi, getDefisParIds } from "./defis";
+import { TYPOLOGIES, ELEMENTS, OPTIONS } from "./config";
+import { BADGES } from "./badges";
+import { getBadge, pickDefis, getDefisParIds } from "./defis";
+import { getPointsDefi } from "./points";
 import { supabase } from "./supabaseClient";
 import Auth from "./Auth";
 
