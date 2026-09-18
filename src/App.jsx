@@ -285,7 +285,7 @@ function Header({ pointsTotal, badge }) {
         >
           <Leaf size={20} />
         </div>
-        <div>
+        <div style={{ textAlign: "left" }}>
           <h1 style={{ fontSize: 18, fontWeight: 800, color: "#3D5A40", margin: 0, lineHeight: 1.1 }}>
             EcoTrail
           </h1>
@@ -344,10 +344,10 @@ function ModalBaladeEnCours({ onReprendre, onAnnuler }) {
       >
         <div style={{ fontSize: 32, marginBottom: 10 }}>🥾</div>
         <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2E2A22", margin: "0 0 8px" }}>
-          Balade en cours
+          Balade en cours...
         </h2>
         <p style={{ fontSize: 13.5, color: "#8A8064", lineHeight: 1.5, marginBottom: 20 }}>
-          Tu as une balade non terminée avec des défis en attente. Tu veux la reprendre ou l'annuler ?
+          Tu as une balade non terminée avec des défis en attente. Veux-tu la reprendre ou l'annuler ?
         </p>
 
         <button onClick={onReprendre} style={boutonPrincipal}>
@@ -444,7 +444,7 @@ function EtapeProfil({ typologie, setTypologie, elements, toggleElement, options
       </div>
 
       <div>
-        <h2 style={titreSection}>3. Options</h2>
+        <h2 style={titreSection}>3. Et en bonus : </h2>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 12 }}>
           {OPTIONS.map((opt) => {
             const active = options.includes(opt.id);
@@ -499,7 +499,7 @@ function EtapeDefis({ defis, defisRealises, onToggle, onValider, onRetour }) {
 
       <h2 style={titreSection}>Tes défis du jour</h2>
       <p style={{ fontSize: 13, color: "#8A8064", margin: 0, lineHeight: 1.5 }}>
-        3 défis t'attendent, dont un plus corsé. Coche ceux que tu as réalisés à la fin de ta balade.
+        3 défis t'attendent. Coche ceux que tu as réalisés à la fin de ta balade.
       </p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -551,7 +551,7 @@ function EtapeDefis({ defis, defisRealises, onToggle, onValider, onRetour }) {
                 }}
               >
                 {realise && <Check size={16} />}
-                {realise ? "Réalisé" : "Marquer comme réalisé"}
+                {realise ? "Réalisé" : "C'est fait !"}
               </button>
             </div>
           );

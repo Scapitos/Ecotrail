@@ -27,6 +27,6 @@ export const ELEMENTS = [
 export const OPTIONS = [
   { id: "bivouac", label: "Bivouac", icon: Tent },
   { id: "chien", label: "Avec mon chien", icon: Dog },
-  { id: "famille", label: "En famille", icon: Users },
+  { id: "enfants", label: "Avec des enfants", icon: Users },
 ];
 
