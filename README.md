@@ -26,7 +26,9 @@ npm install
 L'application a besoin d'un projet Supabase pour fonctionner (connexion/inscription, sauvegarde des points et de la balade en cours).
 
 1. Crée un projet sur [supabase.com](https://supabase.com/).
-2. Dans **Project Settings > API**, récupère l'URL du projet et la clé `anon public`.
+2. Dans **Project Settings** (icône engrenage), récupère l'URL du projet et la clé d'API — depuis la refonte du système de clés par Supabase, ces informations sont réparties sur deux écrans distincts :
+   - **Settings → Data API** : le **Project URL**
+   - **Settings → API Keys** : la clé — soit la nouvelle clé `publishable` (`sb_publishable_...`, onglet **API Keys**), soit l'ancienne clé `anon` (onglet **Legacy API Keys**)
 3. Copie `.env.local.example` en `.env.local` à la racine du projet et renseigne ces deux valeurs :
 
    ```bash
