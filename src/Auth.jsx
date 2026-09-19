@@ -1,6 +1,7 @@
 // src/Auth.jsx
 import { useState } from "react";
 import { supabase } from "./supabaseClient";
+import "./Auth.css";
 
 export default function Auth() {
   const [loading, setLoading] = useState(false);
@@ -33,19 +34,17 @@ export default function Auth() {
   }
 
   return (
-    <div style={containerStyle}>
-      <h2 style={{ color: "#3D5A40", marginTop: 0, marginBottom: 20 }}>
-        {isSignUp ? "Créer un compte" : "Connexion"}
-      </h2>
+    <div className="auth-container">
+      <h2 className="auth-title">{isSignUp ? "Créer un compte" : "Connexion"}</h2>
 
-      <form onSubmit={handleAuth} style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%" }}>
+      <form onSubmit={handleAuth} className="auth-form">
         <input
           type="email"
           placeholder="Ton email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          style={inputStyle}
+          className="auth-input"
         />
         <input
           type="password"
@@ -53,7 +52,7 @@ export default function Auth() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          style={inputStyle}
+          className="auth-input"
         />
 
         {isSignUp && (
@@ -63,45 +62,16 @@ export default function Auth() {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
-            style={inputStyle}
+            className="auth-input"
           />
         )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            width: "100%",
-            padding: "12px 16px",
-            borderRadius: 8,
-            border: "none",
-            background: "#3D5A40",
-            color: "#fff",
-            fontWeight: 800,
-            cursor: "pointer",
-            marginTop: 4,
-          }}
-        >
+        <button type="submit" disabled={loading} className="auth-submit">
           {loading ? "Chargement..." : isSignUp ? "S'inscrire" : "Se connecter"}
         </button>
       </form>
 
-      {message && (
-        <p
-          style={{
-            fontSize: 13,
-            marginTop: 14,
-            marginBottom: 0,
-            color: "#D9534F",
-            fontWeight: 700,
-            width: "100%",
-            wordBreak: "break-word", // Force le texte à aller à la ligne sans élargir la boîte
-            overflowWrap: "break-word",
-          }}
-        >
-          {message}
-        </p>
-      )}
+      {message && <p className="auth-message">{message}</p>}
 
       <button
         onClick={() => {
@@ -109,38 +79,10 @@ export default function Auth() {
           setMessage(null);
           setConfirmPassword("");
         }}
-        style={{
-          background: "none",
-          border: "none",
-          color: "#4A7C82",
-          marginTop: 16,
-          cursor: "pointer",
-          fontSize: 13,
-          fontWeight: 700,
-        }}
+        className="auth-toggle"
       >
         {isSignUp ? "Déjà un compte ? Se connecter" : "Pas encore de compte ? S'inscrire"}
       </button>
     </div>
   );
 }
-
-const containerStyle = {
-  width: "320px", // Largeur strictly fixe
-  margin: "60px auto",
-  padding: 24,
-  textAlign: "center",
-  boxSizing: "border-box",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-};
-
-const inputStyle = {
-  width: "100%",
-  padding: "12px 14px",
-  borderRadius: 8,
-  border: "1px solid #DCD5C0",
-  boxSizing: "border-box",
-  fontSize: 14,
-};
