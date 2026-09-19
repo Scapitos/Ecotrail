@@ -489,3 +489,58 @@
   font-size: 12px;
   color: var(--color-text-muted);
 }
+
+/* ==========================================================================
+   RESPONSIVE — VERSION WEB (tablette / desktop)
+   Le mobile reste la base ci-dessus, ces règles ne s'appliquent
+   qu'à partir des écrans plus larges.
+   ========================================================================== */
+
+@media (min-width: 768px) {
+  .app-shell {
+    align-items: flex-start;
+    padding: 40px 20px;
+  }
+
+  .app-container {
+    max-width: 640px;
+    min-height: auto;
+    margin-top: 24px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px -20px rgba(46, 42, 34, 0.25);
+  }
+
+  .header {
+    padding: 20px 32px;
+  }
+
+  .app-content {
+    padding: 28px 32px 40px;
+  }
+
+  .option-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .challenge-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .recap-step {
+    max-width: 460px;
+    margin: 0 auto;
+  }
+}
+
+@media (min-width: 1200px) {
+  .app-container {
+    max-width: 760px;
+  }
+
+  .option-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
