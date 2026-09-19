@@ -7,6 +7,7 @@ import { getBadge, pickChallenges, getChallengesByIds } from "./challenges";
 import { getChallengePoints } from "./points";
 import { supabase } from "./supabaseClient";
 import Auth from "./Auth";
+import "./App.css";
 
 export default function EcoTrail() {
   const [session, setSession] = useState(null);
@@ -170,22 +171,8 @@ export default function EcoTrail() {
 
   if (loadingSession) {
     return (
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "#F7F4EC",
-        }}
-      >
-        <Leaf size={32} color="#3D5A40" style={{ animation: "pulse 1.2s ease-in-out infinite" }} />
-        <style>{`
-          @keyframes pulse {
-            0%, 100% { opacity: 0.3; transform: scale(0.9); }
-            50% { opacity: 1; transform: scale(1.1); }
-          }
-        `}</style>
+      <div className="app-loading">
+        <Leaf size={32} color="#3D5A40" className="app-loading-icon" />
       </div>
     );
   }
@@ -195,24 +182,15 @@ export default function EcoTrail() {
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100%",
-        background: "#F7F4EC",
-        fontFamily: "'Nunito', 'Segoe UI', sans-serif",
-        color: "#2E2A22",
-        display: "flex",
-        justifyContent: "center",
-      }}
-    >
+    <div className="app-shell">
       {savedWalk && (
         <OngoingWalkModal onResume={resumeWalk} onCancel={cancelSavedWalk} />
       )}
 
-      <div style={{ width: "100%", maxWidth: 420, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <div className="app-container">
         <Header totalPoints={totalPoints} badge={currentBadge} />
 
-        <div style={{ flex: 1, padding: "20px 20px 32px" }}>
+        <div className="app-content">
           {step === "profile" && (
             <ProfileStep
               typology={typology}
@@ -260,57 +238,23 @@ function Header({ totalPoints, badge }) {
   }
 
   return (
-    <header
-      style={{
-        padding: "16px 20px",
-        background: "#FFFFFF",
-        borderBottom: "1px solid #EAE5D9",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            background: "#E8F0E6",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#3D5A40",
-          }}
-        >
+    <header className="header">
+      <div className="header-brand">
+        <div className="header-icon">
           <Leaf size={20} />
         </div>
-        <div style={{ textAlign: "left" }}>
-          <h1 style={{ fontSize: 18, fontWeight: 800, color: "#3D5A40", margin: 0, lineHeight: 1.1 }}>
-            EcoTrail
-          </h1>
-          <span style={{ fontSize: 11, color: "#8A8064" }}>Balade & Biodiversité</span>
+        <div className="header-titles">
+          <h1 className="header-title">EcoTrail</h1>
+          <span className="header-subtitle">Balade & Biodiversité</span>
         </div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#2E2A22" }}>{badge.name}</div>
-          <div style={{ fontSize: 11, color: "#4A7C82", fontWeight: 800 }}>{totalPoints} pts</div>
+      <div className="header-info">
+        <div className="header-stats">
+          <div className="header-badge-name">{badge.name}</div>
+          <div className="header-points">{totalPoints} pts</div>
         </div>
-        <button
-          onClick={signOut}
-          title="Se déconnecter"
-          style={{
-            background: "none",
-            border: "none",
-            color: "#8A8064",
-            cursor: "pointer",
-            padding: 4,
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
+        <button onClick={signOut} title="Se déconnecter" className="header-signout">
           <LogOut size={18} />
         </button>
       </div>
@@ -320,54 +264,18 @@ function Header({ totalPoints, badge }) {
 
 function OngoingWalkModal({ onResume, onCancel }) {
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(46, 42, 34, 0.5)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 20,
-        zIndex: 1000,
-      }}
-    >
-      <div
-        style={{
-          background: "#FFFFFF",
-          borderRadius: 16,
-          padding: 24,
-          maxWidth: 340,
-          width: "100%",
-          textAlign: "center",
-        }}
-      >
-        <div style={{ fontSize: 32, marginBottom: 10 }}>🥾</div>
-        <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2E2A22", margin: "0 0 8px" }}>
-          Balade en cours...
-        </h2>
-        <p style={{ fontSize: 13.5, color: "#8A8064", lineHeight: 1.5, marginBottom: 20 }}>
+    <div className="modal-overlay">
+      <div className="modal-card">
+        <div className="modal-emoji">🥾</div>
+        <h2 className="modal-title">Balade en cours...</h2>
+        <p className="modal-text">
           Tu as une balade non terminée avec des défis en attente. Veux-tu la reprendre ou l'annuler ?
         </p>
 
-        <button onClick={onResume} style={primaryButton}>
+        <button onClick={onResume} className="btn-primary">
           Reprendre ma balade
         </button>
-        <button
-          onClick={onCancel}
-          style={{
-            width: "100%",
-            marginTop: 10,
-            padding: "12px 20px",
-            borderRadius: 12,
-            border: "1px solid #D9534F",
-            background: "transparent",
-            color: "#D9534F",
-            fontSize: 14,
-            fontWeight: 700,
-            cursor: "pointer",
-          }}
-        >
+        <button onClick={onCancel} className="btn-cancel">
           Annuler la balade
         </button>
       </div>
@@ -377,10 +285,10 @@ function OngoingWalkModal({ onResume, onCancel }) {
 
 function ProfileStep({ typology, setTypology, elements, toggleElement, options, toggleOption, onStart }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+    <div className="profile-step">
       <div>
-        <h2 style={sectionTitle}>1. Où marches-tu principalement aujourd'hui ?</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 12 }}>
+        <h2 className="section-title">1. Où marches-tu principalement aujourd'hui ?</h2>
+        <div className="option-grid">
           {TYPOLOGIES.map((t) => {
             const active = typology === t.id;
             const Icon = t.icon;
@@ -388,24 +296,10 @@ function ProfileStep({ typology, setTypology, elements, toggleElement, options, 
               <button
                 key={t.id}
                 onClick={() => setTypology(t.id)}
-                style={{
-                  padding: "14px 12px",
-                  borderRadius: 12,
-                  border: active ? "2px solid #3D5A40" : "1px solid #DCD5C0",
-                  background: active ? "#E8F0E6" : "#FFFFFF",
-                  textAlign: "center",
-                  cursor: "pointer",
-                  color: "#2E2A22",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+                className={`type-button${active ? " active" : ""}`}
               >
                 {Icon && <Icon size={24} color={active ? "#3D5A40" : "#2E2A22"} />}
-                <div style={{ fontSize: 13, fontWeight: 700, marginTop: 6, color: "#2E2A22" }}>
-                  {t.label}
-                </div>
+                <div className="type-button-label">{t.label}</div>
               </button>
             );
           })}
@@ -413,8 +307,8 @@ function ProfileStep({ typology, setTypology, elements, toggleElement, options, 
       </div>
 
       <div>
-        <h2 style={sectionTitle}>2. Tu vas croiser...</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 12 }}>
+        <h2 className="section-title">2. Tu vas croiser...</h2>
+        <div className="option-grid">
           {ELEMENTS.map((el) => {
             const active = elements.includes(el.id);
             const Icon = el.icon;
@@ -422,21 +316,10 @@ function ProfileStep({ typology, setTypology, elements, toggleElement, options, 
               <button
                 key={el.id}
                 onClick={() => toggleElement(el.id)}
-                style={{
-                  padding: "12px",
-                  borderRadius: 12,
-                  border: active ? "2px solid #4A7C82" : "1px solid #DCD5C0",
-                  background: active ? "#EAF2F3" : "#FFFFFF",
-                  textAlign: "left",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  cursor: "pointer",
-                  color: "#2E2A22",
-                }}
+                className={`choice-button${active ? " active" : ""}`}
               >
                 {Icon && <Icon size={20} color={active ? "#4A7C82" : "#2E2A22"} />}
-                <span style={{ fontSize: 13, fontWeight: 600, color: "#2E2A22" }}>{el.label}</span>
+                <span className="choice-button-label">{el.label}</span>
               </button>
             );
           })}
@@ -444,8 +327,8 @@ function ProfileStep({ typology, setTypology, elements, toggleElement, options, 
       </div>
 
       <div>
-        <h2 style={sectionTitle}>3. Et en bonus : </h2>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 12 }}>
+        <h2 className="section-title">3. Et en bonus : </h2>
+        <div className="option-grid">
           {OPTIONS.map((opt) => {
             const active = options.includes(opt.id);
             const Icon = opt.icon;
@@ -453,37 +336,17 @@ function ProfileStep({ typology, setTypology, elements, toggleElement, options, 
               <button
                 key={opt.id}
                 onClick={() => toggleOption(opt.id)}
-                style={{
-                  padding: "12px",
-                  borderRadius: 12,
-                  border: active ? "2px solid #4A7C82" : "1px solid #DCD5C0",
-                  background: active ? "#EAF2F3" : "#FFFFFF",
-                  textAlign: "left",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  cursor: "pointer",
-                  color: "#2E2A22",
-                }}
+                className={`choice-button${active ? " active" : ""}`}
               >
                 {Icon && <Icon size={20} color={active ? "#4A7C82" : "#2E2A22"} />}
-                <span style={{ fontSize: 13, fontWeight: 600, color: "#2E2A22" }}>{opt.label}</span>
+                <span className="choice-button-label">{opt.label}</span>
               </button>
             );
           })}
         </div>
       </div>
 
-      <button
-        disabled={!typology}
-        onClick={onStart}
-        style={{
-          ...primaryButton,
-          opacity: typology ? 1 : 0.5,
-          cursor: typology ? "pointer" : "not-allowed",
-          marginTop: 8,
-        }}
-      >
+      <button disabled={!typology} onClick={onStart} className="btn-primary btn-primary--spaced">
         Trouver mes défis
       </button>
     </div>
@@ -492,63 +355,35 @@ function ProfileStep({ typology, setTypology, elements, toggleElement, options, 
 
 function ChallengesStep({ challenges, completedChallenges, onToggle, onValidate, onBack }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <button onClick={onBack} style={backButton}>
+    <div className="challenges-step">
+      <button onClick={onBack} className="btn-back">
         ← Modifier l'environnement
       </button>
 
-      <h2 style={sectionTitle}>Tes défis du jour</h2>
-      <p style={{ fontSize: 13, color: "#8A8064", margin: 0, lineHeight: 1.5 }}>
+      <h2 className="section-title">Tes défis du jour</h2>
+      <p className="challenges-intro">
         3 défis t'attendent. Coche ceux que tu as réalisés à la fin de ta balade.
       </p>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div className="challenge-list">
         {challenges.map((challenge) => {
           const completed = completedChallenges.includes(challenge.id);
           return (
-            <div
-              key={challenge.id}
-              style={{
-                padding: 16,
-                borderRadius: 14,
-                background: completed ? "#E8F0E6" : "#FFFFFF",
-                border: completed ? "2px solid #3D5A40" : "1px solid #DCD5C0",
-                display: "flex",
-                flexDirection: "column",
-                gap: 8,
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={difficultyBadge(challenge.difficulty)}>
+            <div key={challenge.id} className={`challenge-card${completed ? " completed" : ""}`}>
+              <div className="challenge-card-top">
+                <span className={`badge-diff badge-diff-${challenge.difficulty}`}>
                   Niveau {challenge.difficulty}
                   {challenge.difficulty >= 4 ? " · Corsé" : ""}
                 </span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#3D5A40" }}>
-                  +{getChallengePoints(challenge.difficulty)} pts
-                </span>
+                <span className="challenge-points">+{getChallengePoints(challenge.difficulty)} pts</span>
               </div>
 
-              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#2E2A22" }}>{challenge.title}</h3>
-              <p style={{ fontSize: 13, color: "#8A8064", margin: 0, lineHeight: 1.4 }}>{challenge.explanation}</p>
+              <h3 className="challenge-title">{challenge.title}</h3>
+              <p className="challenge-explanation">{challenge.explanation}</p>
 
               <button
                 onClick={() => onToggle(challenge.id)}
-                style={{
-                  marginTop: 6,
-                  width: "100%",
-                  padding: "10px",
-                  borderRadius: 8,
-                  border: completed ? "none" : "1px solid #DCD5C0",
-                  background: completed ? "#3D5A40" : "#FFFFFF",
-                  color: completed ? "#FFFFFF" : "#5C543F",
-                  fontWeight: 700,
-                  fontSize: 13.5,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 6,
-                }}
+                className={`challenge-toggle-btn${completed ? " completed" : ""}`}
               >
                 {completed && <Check size={16} />}
                 {completed ? "Réalisé" : "C'est fait !"}
@@ -558,7 +393,7 @@ function ChallengesStep({ challenges, completedChallenges, onToggle, onValidate,
         })}
       </div>
 
-      <button onClick={onValidate} style={{ ...primaryButton, marginTop: 8 }}>
+      <button onClick={onValidate} className="btn-primary btn-primary--spaced">
         Valider ma balade ({completedChallenges.length}/{challenges.length})
       </button>
     </div>
@@ -567,27 +402,23 @@ function ChallengesStep({ challenges, completedChallenges, onToggle, onValidate,
 
 function RecapStep({ lastResult, totalPoints, badge, nextBadge, onNewWalk }) {
   return (
-    <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: 20, padding: "10px 0" }}>
-      <div style={{ fontSize: 48, margin: 0 }}>🎉</div>
-      <h2 style={{ fontSize: 22, fontWeight: 800, color: "#3D5A40", margin: 0 }}>Bravo pour ta balade !</h2>
+    <div className="recap-step">
+      <div className="recap-emoji">🎉</div>
+      <h2 className="recap-title">Bravo pour ta balade !</h2>
 
-      <div style={{ background: "#FFFFFF", padding: 20, borderRadius: 16, border: "1px solid #DCD5C0" }}>
-        <div style={{ fontSize: 13, color: "#8A8064" }}>Résultat :</div>
-        <div style={{ fontSize: 15, fontWeight: 700, color: "#2E2A22", margin: "4px 0 12px" }}>
-          {lastResult?.label}
-        </div>
-        <div style={{ fontSize: 24, fontWeight: 800, color: "#3D5A40" }}>
-          +{lastResult?.points || 0} points
-        </div>
+      <div className="recap-result-card">
+        <div className="recap-result-label">Résultat :</div>
+        <div className="recap-result-text">{lastResult?.label}</div>
+        <div className="recap-result-points">+{lastResult?.points || 0} points</div>
       </div>
 
-      <div style={{ background: "#E8F0E6", padding: 16, borderRadius: 14, textAlign: "left" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div className="recap-badge-card">
+        <div className="recap-badge-row">
           <Award size={24} color="#3D5A40" />
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#3D5A40" }}>Badge : {badge.name}</div>
+            <div className="recap-badge-name">Badge : {badge.name}</div>
             {nextBadge && (
-              <div style={{ fontSize: 12, color: "#8A8064" }}>
+              <div className="recap-badge-next">
                 Plus que {nextBadge.threshold - totalPoints} pts pour débloquer {nextBadge.name}
               </div>
             )}
@@ -595,68 +426,9 @@ function RecapStep({ lastResult, totalPoints, badge, nextBadge, onNewWalk }) {
         </div>
       </div>
 
-      <button onClick={onNewWalk} style={primaryButton}>
+      <button onClick={onNewWalk} className="btn-primary">
         <RotateCcw size={18} /> Nouvelle balade
       </button>
     </div>
   );
-}
-
-/* ==========================================================================
-   STYLES RÉUTILISABLES
-   ========================================================================== */
-
-const sectionTitle = {
-  fontSize: 15,
-  fontWeight: 800,
-  color: "#3D5A40",
-  margin: 0,
-};
-
-const primaryButton = {
-  width: "100%",
-  padding: "14px 20px",
-  borderRadius: 12,
-  border: "none",
-  background: "#3D5A40",
-  color: "#FFFFFF",
-  fontSize: 15,
-  fontWeight: 800,
-  cursor: "pointer",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 8,
-};
-
-const backButton = {
-  background: "none",
-  border: "none",
-  color: "#4A7C82",
-  fontSize: 13,
-  fontWeight: 700,
-  cursor: "pointer",
-  textAlign: "left",
-  padding: 0,
-};
-
-function difficultyBadge(diff) {
-  const colors = {
-    1: { bg: "#E8F0E6", txt: "#3D5A40" },
-    2: { bg: "#FFF4E5", txt: "#B76E00" },
-    3: { bg: "#FCE8E6", txt: "#C53929" },
-    4: { bg: "#F1E3F7", txt: "#7B2CBF" },
-    5: { bg: "#2E2A22", txt: "#FFFFFF" },
-  };
-  const c = colors[diff] || colors[1];
-
-  return {
-    fontSize: 11,
-    fontWeight: 800,
-    padding: "3px 8px",
-    borderRadius: 6,
-    background: c.bg,
-    color: c.txt,
-    display: "inline-block",
-  };
 }

@@ -1,184 +1,491 @@
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
+/* ==========================================================================
+   MISE EN PAGE GÉNÉRALE
+   ========================================================================== */
 
-  &:hover {
-    border-color: var(--accent-border);
+.app-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+}
+
+.app-loading-icon {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.9);
   }
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
   }
 }
 
-.hero {
-  position: relative;
-
-  .base,
-  .framework,
-  .vite {
-    inset-inline: 0;
-    margin: 0 auto;
-  }
-
-  .base {
-    width: 170px;
-    position: relative;
-    z-index: 0;
-  }
-
-  .framework,
-  .vite {
-    position: absolute;
-  }
-
-  .framework {
-    z-index: 1;
-    top: 34px;
-    height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
-      scale(1.4);
-  }
-
-  .vite {
-    z-index: 0;
-    top: 107px;
-    height: 26px;
-    width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
-      scale(0.8);
-  }
+.app-shell {
+  min-height: 100%;
+  background: var(--color-bg);
+  color: var(--color-text);
+  display: flex;
+  justify-content: center;
 }
 
-#center {
+.app-container {
+  width: 100%;
+  max-width: 420px;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
 }
 
-#next-steps {
+.app-content {
+  flex: 1;
+  padding: 20px 20px 32px;
+}
+
+/* ==========================================================================
+   EN-TÊTE
+   ========================================================================== */
+
+.header {
+  padding: 16px 20px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border-light);
   display: flex;
-  border-top: 1px solid var(--border);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--color-primary-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+}
+
+.header-titles {
   text-align: left;
-
-  & > div {
-    flex: 1 1 0;
-    padding: 32px;
-    @media (max-width: 1024px) {
-      padding: 24px 20px;
-    }
-  }
-
-  .icon {
-    margin-bottom: 16px;
-    width: 22px;
-    height: 22px;
-  }
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    text-align: center;
-  }
 }
 
-#docs {
-  border-right: 1px solid var(--border);
-
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
+.header-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin: 0;
+  line-height: 1.1;
 }
 
-#next-steps ul {
-  list-style: none;
-  padding: 0;
+.header-subtitle {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.header-info {
   display: flex;
-  gap: 8px;
-  margin: 32px 0 0;
-
-  .logo {
-    height: 18px;
-  }
-
-  a {
-    color: var(--text-h);
-    font-size: 16px;
-    border-radius: 6px;
-    background: var(--social-bg);
-    display: flex;
-    padding: 6px 12px;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: box-shadow 0.3s;
-
-    &:hover {
-      box-shadow: var(--shadow);
-    }
-    .button-icon {
-      height: 18px;
-      width: 18px;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    li {
-      flex: 1 1 calc(50% - 8px);
-    }
-
-    a {
-      width: 100%;
-      justify-content: center;
-      box-sizing: border-box;
-    }
-  }
+  align-items: center;
+  gap: 12px;
 }
 
-#spacer {
-  height: 88px;
-  border-top: 1px solid var(--border);
-  @media (max-width: 1024px) {
-    height: 48px;
-  }
+.header-stats {
+  text-align: right;
 }
 
-.ticks {
-  position: relative;
+.header-badge-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.header-points {
+  font-size: 11px;
+  color: var(--color-secondary);
+  font-weight: 800;
+}
+
+.header-signout {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+/* ==========================================================================
+   MODALE "BALADE EN COURS"
+   ========================================================================== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(46, 42, 34, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+}
+
+.modal-card {
+  background: var(--color-surface);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 340px;
   width: 100%;
+  text-align: center;
+}
 
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
-  }
+.modal-emoji {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
 
-  &::before {
-    left: 0;
-    border-left-color: var(--border);
-  }
-  &::after {
-    right: 0;
-    border-right-color: var(--border);
-  }
+.modal-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-text);
+  margin: 0 0 8px;
+}
+
+.modal-text {
+  font-size: 13.5px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+/* ==========================================================================
+   ÉTAPE PROFIL
+   ========================================================================== */
+
+.section-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin: 0;
+}
+
+.profile-step {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.option-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.type-button {
+  padding: 14px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  text-align: center;
+  cursor: pointer;
+  color: var(--color-text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.type-button.active {
+  border: 2px solid var(--color-primary);
+  background: var(--color-primary-bg);
+}
+
+.type-button-label {
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 6px;
+  color: var(--color-text);
+}
+
+.choice-button {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  color: var(--color-text);
+}
+
+.choice-button.active {
+  border: 2px solid var(--color-secondary);
+  background: var(--color-secondary-bg);
+}
+
+.choice-button-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* ==========================================================================
+   BOUTONS RÉUTILISABLES
+   ========================================================================== */
+
+.btn-primary {
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: none;
+  background: var(--color-primary);
+  color: var(--color-surface);
+  fill: currentColor;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary--spaced {
+  margin-top: 8px;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  color: var(--color-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+}
+
+.btn-cancel {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--color-danger);
+  background: transparent;
+  color: var(--color-danger);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   ÉTAPE DÉFIS
+   ========================================================================== */
+
+.challenges-step {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.challenges-intro {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.challenge-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.challenge-card {
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.challenge-card.completed {
+  background: var(--color-primary-bg);
+  border: 2px solid var(--color-primary);
+}
+
+.challenge-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.challenge-points {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.challenge-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--color-text);
+}
+
+.challenge-explanation {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.challenge-toggle-btn {
+  margin-top: 6px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: #5c543f;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.challenge-toggle-btn.completed {
+  border: none;
+  background: var(--color-primary);
+  color: var(--color-surface);
+}
+
+.badge-diff {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.badge-diff-1 {
+  background: var(--color-primary-bg);
+  color: var(--color-primary);
+}
+
+.badge-diff-2 {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}
+
+.badge-diff-3 {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
+}
+
+.badge-diff-4 {
+  background: var(--color-purple-bg);
+  color: var(--color-purple-text);
+}
+
+.badge-diff-5 {
+  background: var(--color-dark-bg);
+  color: var(--color-surface);
+}
+
+/* ==========================================================================
+   ÉTAPE RÉCAPITULATIF
+   ========================================================================== */
+
+.recap-step {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 10px 0;
+}
+
+.recap-emoji {
+  font-size: 48px;
+  margin: 0;
+}
+
+.recap-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin: 0;
+}
+
+.recap-result-card {
+  background: var(--color-surface);
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+}
+
+.recap-result-label {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.recap-result-text {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 4px 0 12px;
+}
+
+.recap-result-points {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.recap-badge-card {
+  background: var(--color-primary-bg);
+  padding: 16px;
+  border-radius: 14px;
+  text-align: left;
+}
+
+.recap-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.recap-badge-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.recap-badge-next {
+  font-size: 12px;
+  color: var(--color-text-muted);
 }
