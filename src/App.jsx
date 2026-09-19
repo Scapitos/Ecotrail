@@ -3,8 +3,8 @@ import { useState, useMemo, useEffect } from "react";
 import { Leaf, Check, Award, RotateCcw, LogOut } from "lucide-react";
 import { TYPOLOGIES, ELEMENTS, OPTIONS } from "./config";
 import { BADGES } from "./badges";
-import { getBadge, pickDefis, getDefisParIds } from "./defis";
-import { getPointsDefi } from "./points";
+import { getBadge, pickChallenges, getChallengesByIds } from "./challenges";
+import { getChallengePoints } from "./points";
 import { supabase } from "./supabaseClient";
 import Auth from "./Auth";
 
@@ -13,27 +13,27 @@ export default function EcoTrail() {
   const [loadingSession, setLoadingSession] = useState(true);
 
   // États de l'application
-  const [etape, setEtape] = useState("profil");
-  const [typologie, setTypologie] = useState(null);
+  const [step, setStep] = useState("profile");
+  const [typology, setTypology] = useState(null);
   const [elements, setElements] = useState([]);
   const [options, setOptions] = useState([]);
-  const [defisProposes, setDefisProposes] = useState([]);
-  const [defisRealises, setDefisRealises] = useState([]); // tableau d'ids de défis cochés
-  const [pointsTotal, setPointsTotal] = useState(0);
-  const [historique, setHistorique] = useState([]);
-  const [baladeSauvegardee, setBaladeSauvegardee] = useState(null); // balade détectée au chargement, en attente de choix
+  const [proposedChallenges, setProposedChallenges] = useState([]);
+  const [completedChallenges, setCompletedChallenges] = useState([]); // tableau d'ids de défis cochés
+  const [totalPoints, setTotalPoints] = useState(0);
+  const [history, setHistory] = useState([]);
+  const [savedWalk, setSavedWalk] = useState(null); // balade détectée au chargement, en attente de choix
 
   // Écoute de l'authentification
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      if (session) chargerProfilUtilisateur(session.user.id);
+      if (session) loadUserProfile(session.user.id);
       else setLoadingSession(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session) chargerProfilUtilisateur(session.user.id);
+      if (session) loadUserProfile(session.user.id);
       else setLoadingSession(false);
     });
 
@@ -41,7 +41,7 @@ export default function EcoTrail() {
   }, []);
 
   // Charger les points ET la balade en cours depuis Supabase
-  async function chargerProfilUtilisateur(userId) {
+  async function loadUserProfile(userId) {
     const { data, error } = await supabase
       .from("profils")
       .select("points_total, balade_en_cours")
@@ -49,10 +49,10 @@ export default function EcoTrail() {
       .single();
 
     if (data) {
-      setPointsTotal(data.points_total || 0);
+      setTotalPoints(data.points_total || 0);
 
       if (data.balade_en_cours) {
-        setBaladeSauvegardee(data.balade_en_cours);
+        setSavedWalk(data.balade_en_cours);
       }
     } else if (error && error.code === "PGRST116") {
       await supabase.from("profils").insert([{ id: userId, points_total: 0 }]);
@@ -61,43 +61,43 @@ export default function EcoTrail() {
   }
 
   // Sauvegarder les points dans Supabase
-  async function synchroniserPoints(nouveauxPoints) {
+  async function syncPoints(newPoints) {
     if (!session) return;
     const { error } = await supabase.from("profils").upsert({
       id: session.user.id,
-      points_total: nouveauxPoints,
+      points_total: newPoints,
     });
     if (error) console.error("❌ Erreur Supabase (points) :", error.message);
   }
 
   // Sauvegarder la balade en cours (ou l'effacer si null)
-  async function synchroniserBaladeEnCours(baladeState) {
+  async function syncCurrentWalk(walkState) {
     if (!session) return;
     const { error } = await supabase.from("profils").upsert({
       id: session.user.id,
-      balade_en_cours: baladeState,
+      balade_en_cours: walkState,
     });
     if (error) console.error("❌ Erreur Supabase (balade) :", error.message);
   }
 
   // À chaque changement des défis tirés ou des défis cochés, on sauvegarde
   useEffect(() => {
-    if (etape === "defis" && defisProposes.length > 0) {
-      synchroniserBaladeEnCours({
-        typologie,
+    if (step === "challenges" && proposedChallenges.length > 0) {
+      syncCurrentWalk({
+        typologie: typology,
         elements,
         options,
-        defisProposesIds: defisProposes.map((d) => d.id),
-        defisRealises,
+        defisProposesIds: proposedChallenges.map((c) => c.id),
+        defisRealises: completedChallenges,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defisProposes, defisRealises]);
+  }, [proposedChallenges, completedChallenges]);
 
-  const badgeActuel = useMemo(() => getBadge(pointsTotal), [pointsTotal]);
-  const prochainBadge = useMemo(
-    () => BADGES.find((b) => b.seuil > pointsTotal),
-    [pointsTotal]
+  const currentBadge = useMemo(() => getBadge(totalPoints), [totalPoints]);
+  const nextBadge = useMemo(
+    () => BADGES.find((b) => b.threshold > totalPoints),
+    [totalPoints]
   );
 
   function toggleElement(id) {
@@ -112,60 +112,60 @@ export default function EcoTrail() {
     );
   }
 
-  function lancerBalade() {
-    setDefisProposes(pickDefis(typologie, elements, options));
-    setDefisRealises([]);
-    setEtape("defis");
+  function startWalk() {
+    setProposedChallenges(pickChallenges(typology, elements, options));
+    setCompletedChallenges([]);
+    setStep("challenges");
   }
 
-  function toggleRealise(id) {
-    setDefisRealises((prev) =>
+  function toggleCompleted(id) {
+    setCompletedChallenges((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   }
 
-  function validerBalade() {
-    const defisValides = defisProposes.filter((d) => defisRealises.includes(d.id));
-    const pointsGagnes = defisValides.reduce((total, d) => total + getPointsDefi(d.difficulte), 0);
-    const nouveauTotal = pointsTotal + pointsGagnes;
+  function validateWalk() {
+    const validatedChallenges = proposedChallenges.filter((c) => completedChallenges.includes(c.id));
+    const earnedPoints = validatedChallenges.reduce((total, c) => total + getChallengePoints(c.difficulty), 0);
+    const newTotal = totalPoints + earnedPoints;
 
-    setPointsTotal(nouveauTotal);
-    synchroniserPoints(nouveauTotal);
-    synchroniserBaladeEnCours(null); // la balade est terminée, on efface la sauvegarde
-    setHistorique((h) => [
+    setTotalPoints(newTotal);
+    syncPoints(newTotal);
+    syncCurrentWalk(null); // la balade est terminée, on efface la sauvegarde
+    setHistory((h) => [
       {
-        libelle: `${defisValides.length} défi(s) réalisé(s) sur ${defisProposes.length}`,
-        points: pointsGagnes,
-        defisValides,
+        label: `${validatedChallenges.length} défi(s) réalisé(s) sur ${proposedChallenges.length}`,
+        points: earnedPoints,
+        validatedChallenges,
       },
       ...h,
     ]);
-    setEtape("recap");
+    setStep("recap");
   }
 
-  function reprendreBalade() {
-    const b = baladeSauvegardee;
-    setTypologie(b.typologie || null);
-    setElements(b.elements || []);
-    setOptions(b.options || []);
-    setDefisProposes(getDefisParIds(b.defisProposesIds || []));
-    setDefisRealises(b.defisRealises || []);
-    setEtape("defis");
-    setBaladeSauvegardee(null);
+  function resumeWalk() {
+    const w = savedWalk;
+    setTypology(w.typologie || null);
+    setElements(w.elements || []);
+    setOptions(w.options || []);
+    setProposedChallenges(getChallengesByIds(w.defisProposesIds || []));
+    setCompletedChallenges(w.defisRealises || []);
+    setStep("challenges");
+    setSavedWalk(null);
   }
 
-  function annulerBaladeSauvegardee() {
-    synchroniserBaladeEnCours(null);
-    setBaladeSauvegardee(null);
+  function cancelSavedWalk() {
+    syncCurrentWalk(null);
+    setSavedWalk(null);
   }
 
-  function nouvelleBalade() {
-    setTypologie(null);
+  function startNewWalk() {
+    setTypology(null);
     setElements([]);
     setOptions([]);
-    setDefisProposes([]);
-    setDefisRealises([]);
-    setEtape("profil");
+    setProposedChallenges([]);
+    setCompletedChallenges([]);
+    setStep("profile");
   }
 
   if (loadingSession) {
@@ -205,43 +205,43 @@ export default function EcoTrail() {
         justifyContent: "center",
       }}
     >
-      {baladeSauvegardee && (
-        <ModalBaladeEnCours onReprendre={reprendreBalade} onAnnuler={annulerBaladeSauvegardee} />
+      {savedWalk && (
+        <OngoingWalkModal onResume={resumeWalk} onCancel={cancelSavedWalk} />
       )}
 
       <div style={{ width: "100%", maxWidth: 420, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-        <Header pointsTotal={pointsTotal} badge={badgeActuel} />
+        <Header totalPoints={totalPoints} badge={currentBadge} />
 
         <div style={{ flex: 1, padding: "20px 20px 32px" }}>
-          {etape === "profil" && (
-            <EtapeProfil
-              typologie={typologie}
-              setTypologie={setTypologie}
+          {step === "profile" && (
+            <ProfileStep
+              typology={typology}
+              setTypology={setTypology}
               elements={elements}
               toggleElement={toggleElement}
               options={options}
               toggleOption={toggleOption}
-              onLancer={lancerBalade}
+              onStart={startWalk}
             />
           )}
 
-          {etape === "defis" && (
-            <EtapeDefis
-              defis={defisProposes}
-              defisRealises={defisRealises}
-              onToggle={toggleRealise}
-              onValider={validerBalade}
-              onRetour={() => setEtape("profil")}
+          {step === "challenges" && (
+            <ChallengesStep
+              challenges={proposedChallenges}
+              completedChallenges={completedChallenges}
+              onToggle={toggleCompleted}
+              onValidate={validateWalk}
+              onBack={() => setStep("profile")}
             />
           )}
 
-          {etape === "recap" && (
-            <EtapeRecap
-              dernierResultat={historique[0]}
-              pointsTotal={pointsTotal}
-              badge={badgeActuel}
-              prochainBadge={prochainBadge}
-              onNouvelleBalade={nouvelleBalade}
+          {step === "recap" && (
+            <RecapStep
+              lastResult={history[0]}
+              totalPoints={totalPoints}
+              badge={currentBadge}
+              nextBadge={nextBadge}
+              onNewWalk={startNewWalk}
             />
           )}
         </div>
@@ -254,8 +254,8 @@ export default function EcoTrail() {
    SOUS-COMPOSANTS DE L'APPLICATION
    ========================================================================== */
 
-function Header({ pointsTotal, badge }) {
-  async function seDeconnecter() {
+function Header({ totalPoints, badge }) {
+  async function signOut() {
     await supabase.auth.signOut();
   }
 
@@ -295,11 +295,11 @@ function Header({ pointsTotal, badge }) {
 
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#2E2A22" }}>{badge.nom}</div>
-          <div style={{ fontSize: 11, color: "#4A7C82", fontWeight: 800 }}>{pointsTotal} pts</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#2E2A22" }}>{badge.name}</div>
+          <div style={{ fontSize: 11, color: "#4A7C82", fontWeight: 800 }}>{totalPoints} pts</div>
         </div>
         <button
-          onClick={seDeconnecter}
+          onClick={signOut}
           title="Se déconnecter"
           style={{
             background: "none",
@@ -318,7 +318,7 @@ function Header({ pointsTotal, badge }) {
   );
 }
 
-function ModalBaladeEnCours({ onReprendre, onAnnuler }) {
+function OngoingWalkModal({ onResume, onCancel }) {
   return (
     <div
       style={{
@@ -350,11 +350,11 @@ function ModalBaladeEnCours({ onReprendre, onAnnuler }) {
           Tu as une balade non terminée avec des défis en attente. Veux-tu la reprendre ou l'annuler ?
         </p>
 
-        <button onClick={onReprendre} style={boutonPrincipal}>
+        <button onClick={onResume} style={primaryButton}>
           Reprendre ma balade
         </button>
         <button
-          onClick={onAnnuler}
+          onClick={onCancel}
           style={{
             width: "100%",
             marginTop: 10,
@@ -375,19 +375,19 @@ function ModalBaladeEnCours({ onReprendre, onAnnuler }) {
   );
 }
 
-function EtapeProfil({ typologie, setTypologie, elements, toggleElement, options, toggleOption, onLancer }) {
+function ProfileStep({ typology, setTypology, elements, toggleElement, options, toggleOption, onStart }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       <div>
-        <h2 style={titreSection}>1. Où marches-tu principalement aujourd'hui ?</h2>
+        <h2 style={sectionTitle}>1. Où marches-tu principalement aujourd'hui ?</h2>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 12 }}>
           {TYPOLOGIES.map((t) => {
-            const active = typologie === t.id;
-            const Icone = t.icon;
+            const active = typology === t.id;
+            const Icon = t.icon;
             return (
               <button
                 key={t.id}
-                onClick={() => setTypologie(t.id)}
+                onClick={() => setTypology(t.id)}
                 style={{
                   padding: "14px 12px",
                   borderRadius: 12,
@@ -402,7 +402,7 @@ function EtapeProfil({ typologie, setTypologie, elements, toggleElement, options
                   justifyContent: "center",
                 }}
               >
-                {Icone && <Icone size={24} color={active ? "#3D5A40" : "#2E2A22"} />}
+                {Icon && <Icon size={24} color={active ? "#3D5A40" : "#2E2A22"} />}
                 <div style={{ fontSize: 13, fontWeight: 700, marginTop: 6, color: "#2E2A22" }}>
                   {t.label}
                 </div>
@@ -413,11 +413,11 @@ function EtapeProfil({ typologie, setTypologie, elements, toggleElement, options
       </div>
 
       <div>
-        <h2 style={titreSection}>2. Tu vas croiser...</h2>
+        <h2 style={sectionTitle}>2. Tu vas croiser...</h2>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 12 }}>
           {ELEMENTS.map((el) => {
             const active = elements.includes(el.id);
-            const Icone = el.icon;
+            const Icon = el.icon;
             return (
               <button
                 key={el.id}
@@ -435,7 +435,7 @@ function EtapeProfil({ typologie, setTypologie, elements, toggleElement, options
                   color: "#2E2A22",
                 }}
               >
-                {Icone && <Icone size={20} color={active ? "#4A7C82" : "#2E2A22"} />}
+                {Icon && <Icon size={20} color={active ? "#4A7C82" : "#2E2A22"} />}
                 <span style={{ fontSize: 13, fontWeight: 600, color: "#2E2A22" }}>{el.label}</span>
               </button>
             );
@@ -444,11 +444,11 @@ function EtapeProfil({ typologie, setTypologie, elements, toggleElement, options
       </div>
 
       <div>
-        <h2 style={titreSection}>3. Et en bonus : </h2>
+        <h2 style={sectionTitle}>3. Et en bonus : </h2>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 12 }}>
           {OPTIONS.map((opt) => {
             const active = options.includes(opt.id);
-            const Icone = opt.icon;
+            const Icon = opt.icon;
             return (
               <button
                 key={opt.id}
@@ -466,7 +466,7 @@ function EtapeProfil({ typologie, setTypologie, elements, toggleElement, options
                   color: "#2E2A22",
                 }}
               >
-                {Icone && <Icone size={20} color={active ? "#4A7C82" : "#2E2A22"} />}
+                {Icon && <Icon size={20} color={active ? "#4A7C82" : "#2E2A22"} />}
                 <span style={{ fontSize: 13, fontWeight: 600, color: "#2E2A22" }}>{opt.label}</span>
               </button>
             );
@@ -475,12 +475,12 @@ function EtapeProfil({ typologie, setTypologie, elements, toggleElement, options
       </div>
 
       <button
-        disabled={!typologie}
-        onClick={onLancer}
+        disabled={!typology}
+        onClick={onStart}
         style={{
-          ...boutonPrincipal,
-          opacity: typologie ? 1 : 0.5,
-          cursor: typologie ? "pointer" : "not-allowed",
+          ...primaryButton,
+          opacity: typology ? 1 : 0.5,
+          cursor: typology ? "pointer" : "not-allowed",
           marginTop: 8,
         }}
       >
@@ -490,57 +490,57 @@ function EtapeProfil({ typologie, setTypologie, elements, toggleElement, options
   );
 }
 
-function EtapeDefis({ defis, defisRealises, onToggle, onValider, onRetour }) {
+function ChallengesStep({ challenges, completedChallenges, onToggle, onValidate, onBack }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <button onClick={onRetour} style={boutonRetour}>
+      <button onClick={onBack} style={backButton}>
         ← Modifier l'environnement
       </button>
 
-      <h2 style={titreSection}>Tes défis du jour</h2>
+      <h2 style={sectionTitle}>Tes défis du jour</h2>
       <p style={{ fontSize: 13, color: "#8A8064", margin: 0, lineHeight: 1.5 }}>
         3 défis t'attendent. Coche ceux que tu as réalisés à la fin de ta balade.
       </p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {defis.map((defi) => {
-          const realise = defisRealises.includes(defi.id);
+        {challenges.map((challenge) => {
+          const completed = completedChallenges.includes(challenge.id);
           return (
             <div
-              key={defi.id}
+              key={challenge.id}
               style={{
                 padding: 16,
                 borderRadius: 14,
-                background: realise ? "#E8F0E6" : "#FFFFFF",
-                border: realise ? "2px solid #3D5A40" : "1px solid #DCD5C0",
+                background: completed ? "#E8F0E6" : "#FFFFFF",
+                border: completed ? "2px solid #3D5A40" : "1px solid #DCD5C0",
                 display: "flex",
                 flexDirection: "column",
                 gap: 8,
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={badgeDifficulte(defi.difficulte)}>
-                  Niveau {defi.difficulte}
-                  {defi.difficulte >= 4 ? " · Corsé" : ""}
+                <span style={difficultyBadge(challenge.difficulty)}>
+                  Niveau {challenge.difficulty}
+                  {challenge.difficulty >= 4 ? " · Corsé" : ""}
                 </span>
                 <span style={{ fontSize: 12, fontWeight: 700, color: "#3D5A40" }}>
-                  +{getPointsDefi(defi.difficulte)} pts
+                  +{getChallengePoints(challenge.difficulty)} pts
                 </span>
               </div>
 
-              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#2E2A22" }}>{defi.titre}</h3>
-              <p style={{ fontSize: 13, color: "#8A8064", margin: 0, lineHeight: 1.4 }}>{defi.explication}</p>
+              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#2E2A22" }}>{challenge.title}</h3>
+              <p style={{ fontSize: 13, color: "#8A8064", margin: 0, lineHeight: 1.4 }}>{challenge.explanation}</p>
 
               <button
-                onClick={() => onToggle(defi.id)}
+                onClick={() => onToggle(challenge.id)}
                 style={{
                   marginTop: 6,
                   width: "100%",
                   padding: "10px",
                   borderRadius: 8,
-                  border: realise ? "none" : "1px solid #DCD5C0",
-                  background: realise ? "#3D5A40" : "#FFFFFF",
-                  color: realise ? "#FFFFFF" : "#5C543F",
+                  border: completed ? "none" : "1px solid #DCD5C0",
+                  background: completed ? "#3D5A40" : "#FFFFFF",
+                  color: completed ? "#FFFFFF" : "#5C543F",
                   fontWeight: 700,
                   fontSize: 13.5,
                   cursor: "pointer",
@@ -550,22 +550,22 @@ function EtapeDefis({ defis, defisRealises, onToggle, onValider, onRetour }) {
                   gap: 6,
                 }}
               >
-                {realise && <Check size={16} />}
-                {realise ? "Réalisé" : "C'est fait !"}
+                {completed && <Check size={16} />}
+                {completed ? "Réalisé" : "C'est fait !"}
               </button>
             </div>
           );
         })}
       </div>
 
-      <button onClick={onValider} style={{ ...boutonPrincipal, marginTop: 8 }}>
-        Valider ma balade ({defisRealises.length}/{defis.length})
+      <button onClick={onValidate} style={{ ...primaryButton, marginTop: 8 }}>
+        Valider ma balade ({completedChallenges.length}/{challenges.length})
       </button>
     </div>
   );
 }
 
-function EtapeRecap({ dernierResultat, pointsTotal, badge, prochainBadge, onNouvelleBalade }) {
+function RecapStep({ lastResult, totalPoints, badge, nextBadge, onNewWalk }) {
   return (
     <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: 20, padding: "10px 0" }}>
       <div style={{ fontSize: 48, margin: 0 }}>🎉</div>
@@ -574,10 +574,10 @@ function EtapeRecap({ dernierResultat, pointsTotal, badge, prochainBadge, onNouv
       <div style={{ background: "#FFFFFF", padding: 20, borderRadius: 16, border: "1px solid #DCD5C0" }}>
         <div style={{ fontSize: 13, color: "#8A8064" }}>Résultat :</div>
         <div style={{ fontSize: 15, fontWeight: 700, color: "#2E2A22", margin: "4px 0 12px" }}>
-          {dernierResultat?.libelle}
+          {lastResult?.label}
         </div>
         <div style={{ fontSize: 24, fontWeight: 800, color: "#3D5A40" }}>
-          +{dernierResultat?.points || 0} points
+          +{lastResult?.points || 0} points
         </div>
       </div>
 
@@ -585,17 +585,17 @@ function EtapeRecap({ dernierResultat, pointsTotal, badge, prochainBadge, onNouv
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <Award size={24} color="#3D5A40" />
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#3D5A40" }}>Badge : {badge.nom}</div>
-            {prochainBadge && (
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#3D5A40" }}>Badge : {badge.name}</div>
+            {nextBadge && (
               <div style={{ fontSize: 12, color: "#8A8064" }}>
-                Plus que {prochainBadge.seuil - pointsTotal} pts pour débloquer {prochainBadge.nom}
+                Plus que {nextBadge.threshold - totalPoints} pts pour débloquer {nextBadge.name}
               </div>
             )}
           </div>
         </div>
       </div>
 
-      <button onClick={onNouvelleBalade} style={boutonPrincipal}>
+      <button onClick={onNewWalk} style={primaryButton}>
         <RotateCcw size={18} /> Nouvelle balade
       </button>
     </div>
@@ -606,14 +606,14 @@ function EtapeRecap({ dernierResultat, pointsTotal, badge, prochainBadge, onNouv
    STYLES RÉUTILISABLES
    ========================================================================== */
 
-const titreSection = {
+const sectionTitle = {
   fontSize: 15,
   fontWeight: 800,
   color: "#3D5A40",
   margin: 0,
 };
 
-const boutonPrincipal = {
+const primaryButton = {
   width: "100%",
   padding: "14px 20px",
   borderRadius: 12,
@@ -629,7 +629,7 @@ const boutonPrincipal = {
   gap: 8,
 };
 
-const boutonRetour = {
+const backButton = {
   background: "none",
   border: "none",
   color: "#4A7C82",
@@ -640,15 +640,15 @@ const boutonRetour = {
   padding: 0,
 };
 
-function badgeDifficulte(diff) {
-  const couleurs = {
+function difficultyBadge(diff) {
+  const colors = {
     1: { bg: "#E8F0E6", txt: "#3D5A40" },
     2: { bg: "#FFF4E5", txt: "#B76E00" },
     3: { bg: "#FCE8E6", txt: "#C53929" },
     4: { bg: "#F1E3F7", txt: "#7B2CBF" },
     5: { bg: "#2E2A22", txt: "#FFFFFF" },
   };
-  const c = couleurs[diff] || couleurs[1];
+  const c = colors[diff] || colors[1];
 
   return {
     fontSize: 11,
