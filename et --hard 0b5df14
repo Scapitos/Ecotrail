@@ -1,0 +1,24 @@
+[33m274045a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m fix blank page issue
+[33m6b01eda[m fix blank page
+[33m369248a[m fix blank page on github pages by setting vite base path
+[33m0b5df14[m New data
+[33m6ba8d17[m Add responsive styles for Auth and App components: enhance layout for tablet and desktop screens
+[33m71b9a11[m Add Auth component styles: implement CSS for authentication layout and elements
+[33m72cf4c7[m Refactor CSS variables: streamline color definitions and remove unused styles
+[33m0196392[m Refactor App component: integrate CSS styles for layout and components
+[33md56fbec[m Refactor points handling: rename variable and function for clarity and consistency
+[33me84cbb0[m Remove defis.js: delete obsolete challenge functions and related logic
+[33mdfc9894[m Refactor challenge data structure: rename properties for consistency and clarity
+[33ma5db6d3[m Add challenges module: implement functions for badge calculation and challenge selection
+[33maf27f64[m Refactor badge properties: rename 'seuil' and 'nom' to 'threshold' and 'name' for consistency
+[33md421fb7[m Refactor EcoTrail component: update challenge handling and rename variables for clarity
+[33m3ef87c2[m Update README.md to clarify Supabase project setup instructions and API key retrieval process
+[33m26c0f50[m Add example environment configuration for Supabase
+[33m68be460[m Update README.md to provide detailed project description, prerequisites, installation steps, and configuration instructions for EcoTrail
+[33m4b11a1e[m textes
+[33mcf79571[m litt
+[33m5e1135a[m nettoyerbalayerastiquer
+[33meccde2c[m Reprise de balade
+[33m57148e8[m Quick one
+[33m3f55db0[m 2nd commit
+[33m5a810a7[m Premier commit
