@@ -1,7 +1,34 @@
 // src/Auth.jsx
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "./supabaseClient";
 import "./Auth.css";
+
+function PasswordInput({ value, onChange, placeholder }) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div className="auth-password-wrapper">
+      <input
+        type={visible ? "text" : "password"}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        required
+        className="auth-input auth-input--password"
+      />
+      <button
+        type="button"
+        onClick={() => setVisible((v) => !v)}
+        className="auth-password-toggle"
+        tabIndex={-1}
+        aria-label={visible ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+      >
+        {visible ? <EyeOff size={18} /> : <Eye size={18} />}
+      </button>
+    </div>
+  );
+}
 
 export default function Auth() {
   const [loading, setLoading] = useState(false);
@@ -67,24 +94,18 @@ export default function Auth() {
         />
 
         {mode !== "forgot" && (
-          <input
-            type="password"
+          <PasswordInput
             placeholder="Ton mot de passe"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
-            className="auth-input"
           />
         )}
 
         {mode === "signUp" && (
-          <input
-            type="password"
+          <PasswordInput
             placeholder="Confirme ton mot de passe"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            className="auth-input"
           />
         )}
 
@@ -151,21 +172,15 @@ export function ResetPasswordForm({ onDone }) {
       <h2 className="auth-title">Nouveau mot de passe</h2>
 
       <form onSubmit={handleReset} className="auth-form">
-        <input
-          type="password"
+        <PasswordInput
           placeholder="Nouveau mot de passe"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
-          className="auth-input"
         />
-        <input
-          type="password"
+        <PasswordInput
           placeholder="Confirme ton mot de passe"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-          className="auth-input"
         />
 
         <button type="submit" disabled={loading} className="auth-submit">

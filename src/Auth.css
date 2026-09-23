@@ -29,6 +29,29 @@
   font-size: 14px;
 }
 
+.auth-password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.auth-input--password {
+  padding-right: 42px;
+}
+
+.auth-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  color: var(--color-secondary);
+  cursor: pointer;
+}
+
 .auth-submit {
   width: 100%;
   padding: 12px 16px;
