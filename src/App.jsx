@@ -406,10 +406,18 @@ function ChallengeCard({ challenge, completed, onToggleCompleted, onRequestAlter
   const [flipped, setFlipped] = useState(false);
   const [frontChallenge] = useState(challenge);
   const [backChallenge] = useState(() => onRequestAlternative(challenge));
+  const [showNoAlt, setShowNoAlt] = useState(false);
   const pendingRef = useRef(null);
 
- function handleFlip() {
-    if (pendingRef.current || !backChallenge) return;
+  function handleFlip() {
+    if (pendingRef.current) return;
+
+    if (!backChallenge) {
+      setShowNoAlt(true);
+      setTimeout(() => setShowNoAlt(false), 2000);
+      return;
+    }
+
     const current = flipped ? backChallenge : frontChallenge;
     const target = flipped ? frontChallenge : backChallenge;
     pendingRef.current = { oldId: current.id, newChallenge: target };
@@ -422,7 +430,7 @@ function ChallengeCard({ challenge, completed, onToggleCompleted, onRequestAlter
     pendingRef.current = null;
   }
 
-   return (
+  return (
     <div className="challenge-flip-outer">
       <div className={`challenge-flip-inner${flipped ? " flipped" : ""}`} onTransitionEnd={handleTransitionEnd}>
         <div className="challenge-flip-face challenge-flip-face--front">
@@ -431,7 +439,7 @@ function ChallengeCard({ challenge, completed, onToggleCompleted, onRequestAlter
             completed={!flipped && completed}
             onToggleCompleted={!flipped ? onToggleCompleted : () => {}}
             onFlip={!flipped ? handleFlip : () => {}}
-            showFlipButton={!!backChallenge}
+            showNoAlt={!flipped && showNoAlt}
           />
         </div>
         <div className="challenge-flip-face challenge-flip-face--back">
@@ -441,7 +449,7 @@ function ChallengeCard({ challenge, completed, onToggleCompleted, onRequestAlter
               completed={flipped && completed}
               onToggleCompleted={flipped ? onToggleCompleted : () => {}}
               onFlip={flipped ? handleFlip : () => {}}
-              showFlipButton={true}
+              showNoAlt={false}
             />
           )}
         </div>
@@ -450,8 +458,7 @@ function ChallengeCard({ challenge, completed, onToggleCompleted, onRequestAlter
   );
 }
 
-
-function ChallengeCardContent({ challenge, completed, onToggleCompleted, onFlip, showFlipButton }) {
+function ChallengeCardContent({ challenge, completed, onToggleCompleted, onFlip, showNoAlt }) {
   return (
     <div className={`challenge-card${completed ? " completed" : ""}`}>
       <div className="challenge-card-top">
@@ -461,16 +468,18 @@ function ChallengeCardContent({ challenge, completed, onToggleCompleted, onFlip,
         </span>
         <div className="challenge-card-actions">
           <span className="challenge-points">+{getChallengePoints(challenge.difficulty)} pts</span>
-          {showFlipButton && (
-            <button onClick={onFlip} title="Retourner la carte" className="challenge-flip-btn">
-              <ArrowRightLeft size={16} />
-            </button>
-          )}
+          <button onClick={onFlip} title="Retourner la carte" className="challenge-flip-btn">
+            <ArrowRightLeft size={16} />
+          </button>
         </div>
       </div>
 
       <h3 className="challenge-title">{challenge.title}</h3>
       <p className="challenge-explanation">{challenge.explanation}</p>
+
+     <p className={`challenge-no-alt${showNoAlt ? " visible" : ""}`}>
+       Désolé, pas d'autre défi disponible pour cette carte 😕
+      </p>
 
       <button onClick={onToggleCompleted} className={`challenge-toggle-btn${completed ? " completed" : ""}`}>
         {completed && <Check size={16} />}

@@ -109,7 +109,7 @@ export const CHALLENGES = [
     explanation:
       "Batraciens, oiseaux d'eau, libellules... les zones humides comptent parmi les écosystèmes les plus riches en biodiversité, tout en filtrant naturellement l'eau.",
   },
-  {
+ {
     id: "d12",
     title: "Repérer une trace d'atteinte à la zone humide (drainage, décharge sauvage...)",
     category: "ecolo",
