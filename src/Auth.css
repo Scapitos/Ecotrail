@@ -62,6 +62,16 @@
   font-weight: 700;
 }
 
+.auth-forgot {
+  background: none;
+  border: none;
+  color: var(--color-secondary);
+  margin-top: 10px;
+  cursor: pointer;
+  font-size: 12px;
+  text-decoration: underline;
+}
+
 /* ==========================================================================
    RESPONSIVE — VERSION WEB (tablette / desktop)
    ========================================================================== */
