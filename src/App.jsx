@@ -1,5 +1,5 @@
 // src/App.jsx
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Leaf, Check, Award, RotateCcw, LogOut, ArrowRightLeft } from "lucide-react";
 import { TYPOLOGIES, ELEMENTS, OPTIONS } from "./config";
 import { BADGES } from "./badges";
@@ -403,38 +403,53 @@ function ChallengesStep({ challenges, completedChallenges, onToggle, onValidate,
   );
 }
 function ChallengeCard({ challenge, completed, onToggleCompleted, onRequestAlternative, onConfirmReplacement }) {
+  // The card has two faces (front at 0deg, back at 180deg). Each click reveals
+  // whichever face is currently hidden and loads the alternative into it, so a
+  // single click always produces exactly one rotation (never a flip-then-revert).
   const [flipped, setFlipped] = useState(false);
+  const [frontChallenge, setFrontChallenge] = useState(challenge);
   const [backChallenge, setBackChallenge] = useState(null);
+  const pendingRef = useRef(null);
 
   function handleFlip() {
-    if (flipped) return;
-    const alternative = onRequestAlternative(challenge);
+    if (pendingRef.current) return; // ignore clicks while a rotation is in progress
+    const current = flipped ? backChallenge : frontChallenge;
+    const alternative = onRequestAlternative(current);
     if (!alternative) return;
-    setBackChallenge(alternative);
-    setFlipped(true);
+    if (flipped) {
+      setFrontChallenge(alternative);
+    } else {
+      setBackChallenge(alternative);
+    }
+    pendingRef.current = { oldId: current.id, newChallenge: alternative };
+    setFlipped((f) => !f);
   }
 
-  function handleAnimationEnd(e) {
-    if (e.propertyName !== "transform") return;
-    onConfirmReplacement(challenge.id, backChallenge);
-    setFlipped(false);
-    setBackChallenge(null);
+  function handleTransitionEnd(e) {
+    if (e.propertyName !== "transform" || !pendingRef.current) return;
+    onConfirmReplacement(pendingRef.current.oldId, pendingRef.current.newChallenge);
+    pendingRef.current = null;
   }
 
   return (
     <div className="challenge-flip-outer">
-      <div className={`challenge-flip-inner${flipped ? " flipped" : ""}`} onTransitionEnd={handleAnimationEnd}>
+      <div className={`challenge-flip-inner${flipped ? " flipped" : ""}`} onTransitionEnd={handleTransitionEnd}>
         <div className="challenge-flip-face challenge-flip-face--front">
           <ChallengeCardContent
-            challenge={challenge}
-            completed={completed}
-            onToggleCompleted={onToggleCompleted}
-            onFlip={handleFlip}
+            challenge={frontChallenge}
+            completed={!flipped && completed}
+            onToggleCompleted={!flipped ? onToggleCompleted : () => {}}
+            onFlip={!flipped ? handleFlip : () => {}}
           />
         </div>
         <div className="challenge-flip-face challenge-flip-face--back">
           {backChallenge && (
-            <ChallengeCardContent challenge={backChallenge} completed={false} onToggleCompleted={() => {}} onFlip={() => {}} />
+            <ChallengeCardContent
+              challenge={backChallenge}
+              completed={flipped && completed}
+              onToggleCompleted={flipped ? onToggleCompleted : () => {}}
+              onFlip={flipped ? handleFlip : () => {}}
+            />
           )}
         </div>
       </div>
