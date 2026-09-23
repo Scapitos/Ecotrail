@@ -333,6 +333,7 @@
 }
 
 .challenge-card.completed {
+  padding: 15px;
   background: var(--color-primary-bg);
   border: 2px solid var(--color-primary);
 }

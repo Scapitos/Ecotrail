@@ -403,25 +403,16 @@ function ChallengesStep({ challenges, completedChallenges, onToggle, onValidate,
   );
 }
 function ChallengeCard({ challenge, completed, onToggleCompleted, onRequestAlternative, onConfirmReplacement }) {
-  // The card has two faces (front at 0deg, back at 180deg). Each click reveals
-  // whichever face is currently hidden and loads the alternative into it, so a
-  // single click always produces exactly one rotation (never a flip-then-revert).
   const [flipped, setFlipped] = useState(false);
-  const [frontChallenge, setFrontChallenge] = useState(challenge);
-  const [backChallenge, setBackChallenge] = useState(null);
+  const [frontChallenge] = useState(challenge);
+  const [backChallenge] = useState(() => onRequestAlternative(challenge));
   const pendingRef = useRef(null);
 
-  function handleFlip() {
-    if (pendingRef.current) return; // ignore clicks while a rotation is in progress
+ function handleFlip() {
+    if (pendingRef.current || !backChallenge) return;
     const current = flipped ? backChallenge : frontChallenge;
-    const alternative = onRequestAlternative(current);
-    if (!alternative) return;
-    if (flipped) {
-      setFrontChallenge(alternative);
-    } else {
-      setBackChallenge(alternative);
-    }
-    pendingRef.current = { oldId: current.id, newChallenge: alternative };
+    const target = flipped ? frontChallenge : backChallenge;
+    pendingRef.current = { oldId: current.id, newChallenge: target };
     setFlipped((f) => !f);
   }
 
@@ -431,7 +422,7 @@ function ChallengeCard({ challenge, completed, onToggleCompleted, onRequestAlter
     pendingRef.current = null;
   }
 
-  return (
+   return (
     <div className="challenge-flip-outer">
       <div className={`challenge-flip-inner${flipped ? " flipped" : ""}`} onTransitionEnd={handleTransitionEnd}>
         <div className="challenge-flip-face challenge-flip-face--front">
@@ -440,6 +431,7 @@ function ChallengeCard({ challenge, completed, onToggleCompleted, onRequestAlter
             completed={!flipped && completed}
             onToggleCompleted={!flipped ? onToggleCompleted : () => {}}
             onFlip={!flipped ? handleFlip : () => {}}
+            showFlipButton={!!backChallenge}
           />
         </div>
         <div className="challenge-flip-face challenge-flip-face--back">
@@ -449,6 +441,7 @@ function ChallengeCard({ challenge, completed, onToggleCompleted, onRequestAlter
               completed={flipped && completed}
               onToggleCompleted={flipped ? onToggleCompleted : () => {}}
               onFlip={flipped ? handleFlip : () => {}}
+              showFlipButton={true}
             />
           )}
         </div>
@@ -457,7 +450,8 @@ function ChallengeCard({ challenge, completed, onToggleCompleted, onRequestAlter
   );
 }
 
-function ChallengeCardContent({ challenge, completed, onToggleCompleted, onFlip }) {
+
+function ChallengeCardContent({ challenge, completed, onToggleCompleted, onFlip, showFlipButton }) {
   return (
     <div className={`challenge-card${completed ? " completed" : ""}`}>
       <div className="challenge-card-top">
@@ -467,9 +461,11 @@ function ChallengeCardContent({ challenge, completed, onToggleCompleted, onFlip 
         </span>
         <div className="challenge-card-actions">
           <span className="challenge-points">+{getChallengePoints(challenge.difficulty)} pts</span>
-          <button onClick={onFlip} title="Proposer un autre défi de même niveau" className="challenge-flip-btn">
-            <ArrowRightLeft size={16} />
-          </button>
+          {showFlipButton && (
+            <button onClick={onFlip} title="Retourner la carte" className="challenge-flip-btn">
+              <ArrowRightLeft size={16} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -483,6 +479,7 @@ function ChallengeCardContent({ challenge, completed, onToggleCompleted, onFlip 
     </div>
   );
 }
+
 function RecapStep({ lastResult, totalPoints, badge, nextBadge, onNewWalk }) {
   return (
     <div className="recap-step">
