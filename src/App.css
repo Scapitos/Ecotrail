@@ -359,6 +359,7 @@
   color: var(--color-text-muted);
   margin: 0;
   line-height: 1.4;
+  flex: 1;
 }
 
 .challenge-toggle-btn {
@@ -535,9 +536,28 @@
   }
 }
 
+@media (min-width: 1024px) {
+  .app-container {
+    max-width: 820px;
+  }
+
+  .challenge-list {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+
+  .challenge-card {
+    padding: 20px;
+  }
+
+  .challenge-title {
+    font-size: 16px;
+  }
+}
+
 @media (min-width: 1200px) {
   .app-container {
-    max-width: 760px;
+    max-width: 900px;
   }
 
   .option-grid {
