@@ -418,6 +418,45 @@
   color: var(--color-surface);
 }
 
+.challenge-flip-outer {
+  perspective: 1000px;
+}
+
+.challenge-flip-inner {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s ease;
+}
+
+.challenge-flip-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+.challenge-flip-face {
+  backface-visibility: hidden;
+}
+
+.challenge-flip-face--back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+}
+
+.challenge-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.challenge-flip-btn {
+  background: none;
+  border: none;
+  color: #8A8064;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+}
 /* ==========================================================================
    ÉTAPE RÉCAPITULATIF
    ========================================================================== */

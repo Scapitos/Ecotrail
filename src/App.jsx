@@ -1,9 +1,9 @@
 // src/App.jsx
 import { useState, useMemo, useEffect } from "react";
-import { Leaf, Check, Award, RotateCcw, LogOut } from "lucide-react";
+import { Leaf, Check, Award, RotateCcw, LogOut, ArrowRightLeft } from "lucide-react";
 import { TYPOLOGIES, ELEMENTS, OPTIONS } from "./config";
 import { BADGES } from "./badges";
-import { getBadge, pickChallenges, getChallengesByIds } from "./challenges";
+import { getBadge, pickChallenges, getChallengesByIds, getAlternativeChallenges } from "./challenges";
 import { getChallengePoints } from "./points";
 import { supabase } from "./supabaseClient";
 import Auth, { ResetPasswordForm } from "./Auth";
@@ -127,6 +127,16 @@ export default function EcoTrail() {
     );
   }
 
+  function requestAlternativeChallenge(currentChallenge) {
+    const others = proposedChallenges.filter((c) => c.id !== currentChallenge.id);
+    return getAlternativeChallenges(currentChallenge, typology, elements, options, others);
+  }
+
+  function confirmReplacement(oldId, newChallenge) {
+    setProposedChallenges((prev) => prev.map((c) => (c.id === oldId ? newChallenge : c)));
+    setCompletedChallenges((prev) => prev.filter((id) => id !== oldId));
+  }
+
   function validateWalk() {
     const validatedChallenges = proposedChallenges.filter((c) => completedChallenges.includes(c.id));
     const earnedPoints = validatedChallenges.reduce((total, c) => total + getChallengePoints(c.difficulty), 0);
@@ -216,6 +226,8 @@ export default function EcoTrail() {
               onToggle={toggleCompleted}
               onValidate={validateWalk}
               onBack={() => setStep("profile")}
+              onRequestAlternative={requestAlternativeChallenge}
+              onConfirmReplacement={confirmReplacement}
             />
           )}
 
@@ -359,7 +371,7 @@ function ProfileStep({ typology, setTypology, elements, toggleElement, options, 
   );
 }
 
-function ChallengesStep({ challenges, completedChallenges, onToggle, onValidate, onBack }) {
+function ChallengesStep({ challenges, completedChallenges, onToggle, onValidate, onBack, onRequestAlternative, onConfirmReplacement }) {
   return (
     <div className="challenges-step">
       <button onClick={onBack} className="btn-back">
@@ -368,35 +380,20 @@ function ChallengesStep({ challenges, completedChallenges, onToggle, onValidate,
 
       <h2 className="section-title">Tes défis du jour</h2>
       <p className="challenges-intro">
-        3 défis t'attendent. Coche ceux que tu as réalisés à la fin de ta balade.
+        3 défis t'attendent. Pas convaincu par l'un d'eux ? Retourne la carte pour en changer.
       </p>
 
       <div className="challenge-list">
-        {challenges.map((challenge) => {
-          const completed = completedChallenges.includes(challenge.id);
-          return (
-            <div key={challenge.id} className={`challenge-card${completed ? " completed" : ""}`}>
-              <div className="challenge-card-top">
-                <span className={`badge-diff badge-diff-${challenge.difficulty}`}>
-                  Niveau {challenge.difficulty}
-                  {challenge.difficulty >= 4 ? " · Corsé" : ""}
-                </span>
-                <span className="challenge-points">+{getChallengePoints(challenge.difficulty)} pts</span>
-              </div>
-
-              <h3 className="challenge-title">{challenge.title}</h3>
-              <p className="challenge-explanation">{challenge.explanation}</p>
-
-              <button
-                onClick={() => onToggle(challenge.id)}
-                className={`challenge-toggle-btn${completed ? " completed" : ""}`}
-              >
-                {completed && <Check size={16} />}
-                {completed ? "Réalisé" : "C'est fait !"}
-              </button>
-            </div>
-          );
-        })}
+        {challenges.map((challenge, index) => (
+          <ChallengeCard
+            key={index}
+            challenge={challenge}
+            completed={completedChallenges.includes(challenge.id)}
+            onToggleCompleted={() => onToggle(challenge.id)}
+            onRequestAlternative={onRequestAlternative}
+            onConfirmReplacement={onConfirmReplacement}
+          />
+        ))}
       </div>
 
       <button onClick={onValidate} className="btn-primary btn-primary--spaced">
@@ -405,7 +402,72 @@ function ChallengesStep({ challenges, completedChallenges, onToggle, onValidate,
     </div>
   );
 }
+function ChallengeCard({ challenge, completed, onToggleCompleted, onRequestAlternative, onConfirmReplacement }) {
+  const [flipped, setFlipped] = useState(false);
+  const [backChallenge, setBackChallenge] = useState(null);
 
+  function handleFlip() {
+    if (flipped) return;
+    const alternative = onRequestAlternative(challenge);
+    if (!alternative) return;
+    setBackChallenge(alternative);
+    setFlipped(true);
+  }
+
+  function handleAnimationEnd(e) {
+    if (e.propertyName !== "transform") return;
+    onConfirmReplacement(challenge.id, backChallenge);
+    setFlipped(false);
+    setBackChallenge(null);
+  }
+
+  return (
+    <div className="challenge-flip-outer">
+      <div className={`challenge-flip-inner${flipped ? " flipped" : ""}`} onTransitionEnd={handleAnimationEnd}>
+        <div className="challenge-flip-face challenge-flip-face--front">
+          <ChallengeCardContent
+            challenge={challenge}
+            completed={completed}
+            onToggleCompleted={onToggleCompleted}
+            onFlip={handleFlip}
+          />
+        </div>
+        <div className="challenge-flip-face challenge-flip-face--back">
+          {backChallenge && (
+            <ChallengeCardContent challenge={backChallenge} completed={false} onToggleCompleted={() => {}} onFlip={() => {}} />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChallengeCardContent({ challenge, completed, onToggleCompleted, onFlip }) {
+  return (
+    <div className={`challenge-card${completed ? " completed" : ""}`}>
+      <div className="challenge-card-top">
+        <span className={`badge-diff badge-diff-${challenge.difficulty}`}>
+          Niveau {challenge.difficulty}
+          {challenge.difficulty >= 4 ? " · Corsé" : ""}
+        </span>
+        <div className="challenge-card-actions">
+          <span className="challenge-points">+{getChallengePoints(challenge.difficulty)} pts</span>
+          <button onClick={onFlip} title="Proposer un autre défi de même niveau" className="challenge-flip-btn">
+            <ArrowRightLeft size={16} />
+          </button>
+        </div>
+      </div>
+
+      <h3 className="challenge-title">{challenge.title}</h3>
+      <p className="challenge-explanation">{challenge.explanation}</p>
+
+      <button onClick={onToggleCompleted} className={`challenge-toggle-btn${completed ? " completed" : ""}`}>
+        {completed && <Check size={16} />}
+        {completed ? "Réalisé" : "C'est fait !"}
+      </button>
+    </div>
+  );
+}
 function RecapStep({ lastResult, totalPoints, badge, nextBadge, onNewWalk }) {
   return (
     <div className="recap-step">

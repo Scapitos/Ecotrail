@@ -55,3 +55,28 @@ export function pickChallenges(typology, elements, options) {
   return selection.sort((a, b) => b.difficulty - a.difficulty);
 }
 
+export function getAlternativeChallenges(currentChallenge, typology, elements, options, otherDisplayedChallenges) {
+  const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
+  const displayedIds = otherDisplayedChallenges.map((c) => c.id);
+  const displayedGroups = otherDisplayedChallenges.filter((c) => c.group).map((c) => c.group);
+
+  const compatible = CHALLENGES.filter((c) => {
+    if (c.id === currentChallenge.id || displayedIds.includes(c.id)) return false;
+    if (c.difficulty !== currentChallenge.difficulty) return false;
+    if (c.group && displayedGroups.includes(c.group)) return false;
+    const matchProfile = c.profiles.includes(typology);
+    const matchElement = !c.elements || c.elements.some((e) => elements.includes(e));
+    const matchOption = !c.options || c.options.some((o) => options.includes(o));
+    return matchProfile && matchElement && matchOption;
+  });
+
+  const pool =
+    compatible.length > 0
+      ? compatible
+      : CHALLENGES.filter(
+          (c) => c.difficulty === currentChallenge.difficulty && c.id !== currentChallenge.id && !displayedIds.includes(c.id)
+        );
+
+  if (pool.length === 0) return null;
+  return shuffle(pool)[0];
+}
