@@ -6,12 +6,13 @@ import { BADGES } from "./badges";
 import { getBadge, pickChallenges, getChallengesByIds } from "./challenges";
 import { getChallengePoints } from "./points";
 import { supabase } from "./supabaseClient";
-import Auth from "./Auth";
+import Auth, { ResetPasswordForm } from "./Auth";
 import "./App.css";
 
 export default function EcoTrail() {
   const [session, setSession] = useState(null);
   const [loadingSession, setLoadingSession] = useState(true);
+  const [passwordRecovery, setPasswordRecovery] = useState(false);
 
   // États de l'application
   const [step, setStep] = useState("profile");
@@ -32,7 +33,8 @@ export default function EcoTrail() {
       else setLoadingSession(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY") setPasswordRecovery(true);
       setSession(session);
       if (session) loadUserProfile(session.user.id);
       else setLoadingSession(false);
@@ -175,6 +177,10 @@ export default function EcoTrail() {
         <Leaf size={32} color="#3D5A40" className="app-loading-icon" />
       </div>
     );
+  }
+
+  if (passwordRecovery) {
+    return <ResetPasswordForm onDone={() => setPasswordRecovery(false)} />;
   }
 
   if (!session) {
